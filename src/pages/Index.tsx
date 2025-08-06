@@ -9,9 +9,9 @@ import { Calculator, Wallet, CalendarDays, FileText } from "lucide-react"; // Im
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md shadow-xl rounded-lg text-center bg-white/90 backdrop-blur-sm border border-blue-200">
+      <Card className="w-full max-w-md shadow-xl rounded-lg text-center bg-white/90 backdrop-blur-sm border-blue-200">
         <CardHeader className="pb-4">
-          <CardTitle className="text-3xl font-extrabold text-gray-800 mb-2">
+          <CardTitle className="text-3xl font-extrabold text-primary mb-2">
             Calculadora de Prestaciones Laborales
           </CardTitle>
           <p className="text-lg text-gray-600">Panamá</p>
@@ -22,22 +22,22 @@ const Index = () => {
           </p>
           <div className="flex flex-col space-y-4">
             <Link to="/liquidacion">
-              <Button className="w-full py-3 h-auto text-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all duration-200 flex items-center justify-center">
+              <Button className="w-full py-3 h-auto text-lg shadow-md transition-all duration-200 flex items-center justify-center">
                 <Calculator className="mr-3 h-6 w-6" /> Cálculo de Liquidación
               </Button>
             </Link>
             <Link to="/salario">
-              <Button className="w-full py-3 h-auto text-lg bg-green-600 hover:bg-green-700 text-white shadow-md transition-all duration-200 flex items-center justify-center">
+              <Button className="w-full py-3 h-auto text-lg shadow-md transition-all duration-200 flex items-center justify-center">
                 <Wallet className="mr-3 h-6 w-6" /> Cálculo de Salario Neto
               </Button>
             </Link>
             <Link to="/decimo-tercer-mes">
-              <Button className="w-full py-3 h-auto text-lg bg-purple-600 hover:bg-purple-700 text-white shadow-md transition-all duration-200 flex items-center justify-center">
+              <Button className="w-full py-3 h-auto text-lg shadow-md transition-all duration-200 flex items-center justify-center">
                 <CalendarDays className="mr-3 h-6 w-6" /> Cálculo de Décimo Tercer Mes
               </Button>
             </Link>
             <Link to="/carta-renuncia">
-              <Button className="w-full py-3 h-auto text-lg bg-red-600 hover:bg-red-700 text-white shadow-md transition-all duration-200 flex items-center justify-center">
+              <Button className="w-full py-3 h-auto text-lg shadow-md transition-all duration-200 flex items-center justify-center">
                 <FileText className="mr-3 h-6 w-6" /> Generador de Carta de Renuncia
               </Button>
             </Link>

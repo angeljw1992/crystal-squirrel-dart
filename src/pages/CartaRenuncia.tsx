@@ -104,7 +104,7 @@ C.I.P. No. ${idNumber}
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
       <Card className="w-full max-w-3xl shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Generador de Carta de Renuncia</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center text-primary">Generador de Carta de Renuncia</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600 mb-4 text-center">

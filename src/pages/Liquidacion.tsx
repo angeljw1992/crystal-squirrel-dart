@@ -110,7 +110,7 @@ const Liquidacion = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
       <Card className="w-full max-w-2xl shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Cálculo de Liquidación</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center text-primary">Cálculo de Liquidación</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600 mb-4 text-center">
