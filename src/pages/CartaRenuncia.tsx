@@ -33,7 +33,7 @@ const formSchema = z.object({
   city: z.string().min(1, "La ciudad es requerida.").default("Panamá"),
   startDate: z.date({ required_error: "La fecha de inicio es requerida." }),
   endDate: z.date({ required_error: "La fecha de fin es requerida." }),
-  reason: z.string().optional(),
+  reason: z.string().min(1, "El motivo de la renuncia es requerido."),
 });
 
 const CartaRenuncia = () => {
@@ -51,7 +51,7 @@ const CartaRenuncia = () => {
     const formattedEndDate = format(endDate, "dd 'de' MMMM 'de' yyyy", { locale: es });
     const currentDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: es });
 
-    const reasonParagraph = reason ? `\n\n${reason.trim()}` : '';
+    const reasonParagraph = `\n\n${reason.trim()}`;
 
     const letter = `${city}, ${currentDate}\n\nSeñores\n${companyName}\nE.S.M.\n\nEstimados señores:\n\nPor medio de la presente, yo, ${name}, con cédula de identidad personal No. ${idNumber}, presento mi renuncia voluntaria e irrevocable al cargo de ${jobTitle}, que he venido desempeñando desde el ${formattedStartDate}.\n\nEsta decisión será efectiva a partir del día ${formattedEndDate}, siendo este mi último día de labores.${reasonParagraph}\n\nAgradezco la oportunidad y la confianza depositada en mí durante mi tiempo en la empresa.\n\nAtentamente,\n\n_________________________\n${name}\nC.I.P. No. ${idNumber}`;
     setLetterContent(letter.trim());
@@ -89,7 +89,7 @@ const CartaRenuncia = () => {
                   name="reason"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Motivo de la Renuncia (Opcional)</FormLabel>
+                      <FormLabel>Motivo de la Renuncia</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Ej: Agradezco las oportunidades de desarrollo profesional que me brindaron..."
