@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import html2pdf from 'html2pdf.js'; // Import html2pdf
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, DownloadIcon } from "lucide-react"; // Import DownloadIcon
 
 const formSchema = z.object({
   name: z.string().min(1, "El nombre es requerido."),
@@ -39,6 +40,7 @@ const formSchema = z.object({
 
 const CartaRenuncia = () => {
   const [letterContent, setLetterContent] = useState<string | null>(null);
+  const letterRef = useRef<HTMLDivElement>(null); // Ref for the letter content
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -83,6 +85,19 @@ ${name}
 C.I.P. No. ${idNumber}
     `.trim();
     setLetterContent(letter);
+  };
+
+  const handleDownloadPdf = () => {
+    if (letterRef.current) {
+      const opt = {
+        margin: 1,
+        filename: 'carta_renuncia.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().from(letterRef.current).set(opt).save();
+    }
   };
 
   return (
@@ -242,9 +257,14 @@ C.I.P. No. ${idNumber}
           </Form>
 
           {letterContent && (
-            <div className="mt-8 p-4 border rounded-md bg-gray-50 whitespace-pre-wrap font-mono text-sm">
+            <div className="mt-8 p-4 border rounded-md bg-gray-50">
               <h3 className="text-xl font-semibold mb-4 text-center">Borrador de Carta de Renuncia</h3>
-              {letterContent}
+              <div ref={letterRef} className="whitespace-pre-wrap font-mono text-sm p-4 bg-white rounded-md shadow-inner">
+                {letterContent}
+              </div>
+              <Button onClick={handleDownloadPdf} className="w-full mt-4">
+                <DownloadIcon className="mr-2 h-4 w-4" /> Descargar PDF
+              </Button>
               <p className="text-xs text-red-500 mt-4">
                 *Este es un borrador de carta de renuncia. Asegúrese de revisarlo cuidadosamente y adaptarlo a sus necesidades específicas antes de usarlo.
               </p>
