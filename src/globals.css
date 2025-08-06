@@ -99,3 +99,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .rdp-dropdown_month, .rdp-dropdown_year {
+    @apply px-2 py-1.5 rounded-md border bg-transparent text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+}
