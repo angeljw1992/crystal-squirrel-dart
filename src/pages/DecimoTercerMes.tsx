@@ -101,9 +101,9 @@ const DecimoTercerMes = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="primer">Primer Período (Enero - Marzo)</SelectItem>
-                        <SelectItem value="segundo">Segundo Período (Abril - Julio)</SelectItem>
-                        <SelectItem value="tercer">Tercer Período (Agosto - Noviembre)</SelectItem>
+                        <SelectItem value="primer">Abril</SelectItem>
+                        <SelectItem value="segundo">Agosto</SelectItem>
+                        <SelectItem value="tercer">Diciembre</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -215,7 +215,7 @@ const DecimoTercerMes = () => {
             <div className="mt-8 p-4 border rounded-md bg-gray-50">
               <h3 className="text-xl font-semibold mb-4 text-center">Resultados del Cálculo</h3>
               <div className="space-y-2">
-                <p><strong>Período Seleccionado:</strong> {result.periodType === "primer" ? "Enero - Marzo" : result.periodType === "segundo" ? "Abril - Julio" : "Agosto - Noviembre"}</p>
+                <p><strong>Período Seleccionado:</strong> {result.periodType === "primer" ? "Abril" : result.periodType === "segundo" ? "Agosto" : "Diciembre"}</p>
                 <p><strong>Fecha de Inicio del Período:</strong> {format(result.startDate, "PPP", { locale: es })}</p>
                 <p><strong>Fecha de Fin del Período:</strong> {format(result.endDate, "PPP", { locale: es })}</p>
                 <p><strong>Total de Ingresos Brutos en el Período:</strong> ${result.totalEarnings.toFixed(2)}</p>
