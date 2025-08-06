@@ -20,12 +20,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, ArrowLeft } from "lucide-react";
 
 const formSchema = z.object({
+  contractType: z.enum(["indefinido", "definido", "obra_terminada"], {
+    required_error: "El tipo de contrato es requerido.",
+  }),
   startDate: z.date({
     required_error: "La fecha de inicio es requerida.",
   }),
@@ -50,7 +60,7 @@ const Liquidacion = () => {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const { startDate, endDate, monthlySalary, pendingVacationDays, pendingThirteenthMonth } = values;
+    const { contractType, startDate, endDate, monthlySalary, pendingVacationDays, pendingThirteenthMonth } = values;
 
     // Basic calculations (simplified for demonstration)
     const yearsOfService = differenceInYears(endDate, startDate);
@@ -68,37 +78,33 @@ const Liquidacion = () => {
     }
     const preaviso = (monthlySalary / 30) * preavisoDays;
 
-    // Antigüedad (Seniority Pay) - Simplified rules
-    // Example: 3.4 weeks per year after 2 years, 1 week per month for first 2 years
+    // Antigüedad (Seniority Pay) - Only for indefinite contracts
     let antiguedad = 0;
-    if (yearsOfService >= 2) {
-      antiguedad = (monthlySalary / 4.33) * 3.4 * yearsOfService; // 3.4 weeks per year
-    } else if (yearsOfService >= 1) {
-      antiguedad = (monthlySalary / 4.33) * 1 * 12; // 1 week per month for 1st year
-    } else {
-      antiguedad = (monthlySalary / 4.33) * 1 * monthsOfService; // 1 week per month for less than 1 year
+    if (contractType === 'indefinido') {
+      if (yearsOfService >= 2) {
+        antiguedad = (monthlySalary / 4.33) * 3.4 * yearsOfService; // 3.4 weeks per year
+      } else if (yearsOfService >= 1) {
+        antiguedad = (monthlySalary / 4.33) * 1 * 12; // 1 week per month for 1st year
+      } else {
+        antiguedad = (monthlySalary / 4.33) * 1 * monthsOfService; // 1 week per month for less than 1 year
+      }
     }
 
-
     // Vacaciones Proporcionales (Proportional Vacation)
-    // Example: 1 day per 11 days worked, or 5.5% of total earnings
     const dailySalary = monthlySalary / 30;
     const proportionalVacation = (daysOfService / 11) * dailySalary;
 
     // Décimo Tercer Mes Proporcional (Proportional Thirteenth Month)
-    // This is usually 1/12 of total earnings for the period.
-    // For simplicity, let's assume it's proportional to the last period worked.
     const proportionalThirteenthMonth = (monthlySalary / 12) * (daysOfService / 30);
 
-
-    const totalLiquidacion = preaviso + antiguedad + proportionalVacation + proportionalThirteenthMonth + pendingVacationDays + pendingThirteenthMonth;
+    const totalLiquidacion = preaviso + antiguedad + proportionalVacation + proportionalThirteenthMonth + (pendingVacationDays * dailySalary) + pendingThirteenthMonth;
 
     setResult({
       preaviso,
       antiguedad,
       proportionalVacation,
       proportionalThirteenthMonth,
-      pendingVacationDays,
+      pendingVacationDays: pendingVacationDays * dailySalary,
       pendingThirteenthMonth,
       totalLiquidacion,
       yearsOfService,
@@ -127,6 +133,28 @@ const Liquidacion = () => {
           </p>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="contractType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Contrato</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccione el tipo de contrato" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="indefinido">Indefinido</SelectItem>
+                        <SelectItem value="definido">Definido</SelectItem>
+                        <SelectItem value="obra_terminada">Obra Terminada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="startDate"
@@ -260,15 +288,15 @@ const Liquidacion = () => {
               <div className="space-y-2">
                 <p><strong>Tiempo de Servicio:</strong> {result.yearsOfService} años, {result.monthsOfService} meses, {result.daysOfService % 30} días</p>
                 <p><strong>Preaviso:</strong> ${result.preaviso.toFixed(2)}</p>
-                <p><strong>Antigüedad:</strong> ${result.antiguedad.toFixed(2)}</p>
+                <p><strong>Prima de Antigüedad:</strong> ${result.antiguedad.toFixed(2)}</p>
                 <p><strong>Vacaciones Proporcionales:</strong> ${result.proportionalVacation.toFixed(2)}</p>
                 <p><strong>Décimo Tercer Mes Proporcional:</strong> ${result.proportionalThirteenthMonth.toFixed(2)}</p>
-                {result.pendingVacationDays > 0 && <p><strong>Días de Vacaciones Pendientes:</strong> ${result.pendingVacationDays.toFixed(2)}</p>}
+                {result.pendingVacationDays > 0 && <p><strong>Pago por Vacaciones Pendientes:</strong> ${result.pendingVacationDays.toFixed(2)}</p>}
                 {result.pendingThirteenthMonth > 0 && <p><strong>Décimo Tercer Mes Pendiente:</strong> ${result.pendingThirteenthMonth.toFixed(2)}</p>}
-                <p className="text-lg font-bold mt-4">Total Liquidación: ${result.totalLiquidacion.toFixed(2)}</p>
+                <p className="text-lg font-bold mt-4">Total Liquidación Estimada: ${result.totalLiquidacion.toFixed(2)}</p>
               </div>
               <p className="text-xs text-red-500 mt-4">
-                *Este cálculo es una estimación simplificada. Las leyes laborales de Panamá son complejas y pueden requerir consideraciones adicionales (ej. tipo de contrato, causa de terminación, salarios variables, etc.). Consulte a un profesional legal para un cálculo exacto.
+                *Este cálculo es una estimación y asume una terminación por parte del empleador. La prima de antigüedad solo aplica a contratos indefinidos. Las leyes laborales de Panamá son complejas. Consulte a un profesional para un cálculo exacto.
               </p>
             </div>
           )}
