@@ -4,12 +4,9 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
@@ -32,98 +29,54 @@ const Salario = () => {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      grossSalary: 0,
-      overtimeHours: 0,
-      otherIncome: 0,
-      otherDeductions: 0,
-    },
+    defaultValues: { grossSalary: 0, overtimeHours: 0, otherIncome: 0, otherDeductions: 0 },
   });
 
   const calculateISR = (annualTaxableIncome: number): number => {
-    let isr = 0;
-    // Simplified ISR brackets for Panama (example, not official or exhaustive)
-    // These brackets are for annual income.
-    if (annualTaxableIncome <= 11000) {
-      isr = 0;
-    } else if (annualTaxableIncome <= 50000) {
-      isr = (annualTaxableIncome - 11000) * 0.15;
-    } else {
-      isr = (39000 * 0.15) + (annualTaxableIncome - 50000) * 0.25; // 39000 = 50000 - 11000
-    }
-    return isr;
+    if (annualTaxableIncome <= 11000) return 0;
+    if (annualTaxableIncome <= 50000) return (annualTaxableIncome - 11000) * 0.15;
+    return (39000 * 0.15) + (annualTaxableIncome - 50000) * 0.25;
   };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const { grossSalary, overtimeHours, otherIncome, otherDeductions } = values;
-
-    // Simplified calculations for Panama
-    // CSS (Caja de Seguro Social) - Employee contribution: 9.75%
     const cssDeduction = grossSalary * 0.0975;
-
-    // Seguro Educativo - Employee contribution: 1.25%
     const seguroEducativoDeduction = grossSalary * 0.0125;
-
-    // Overtime calculation (simplified: assuming 1.25x for regular overtime, 1.5x for night/holiday)
-    // For simplicity, let's assume a fixed hourly rate and a general overtime multiplier
-    const hourlyRate = grossSalary / 160; // Assuming 160 working hours per month
-    const overtimePay = overtimeHours * hourlyRate * 1.5; // Example: 1.5x for all overtime
-
+    const hourlyRate = grossSalary / 160;
+    const overtimePay = overtimeHours * hourlyRate * 1.5;
     const totalIncome = grossSalary + overtimePay + otherIncome;
-    
-    // Taxable income for ISR (gross income - CSS deduction - Seguro Educativo)
     const monthlyTaxableIncome = totalIncome - cssDeduction - seguroEducativoDeduction;
-    const annualTaxableIncome = monthlyTaxableIncome * 12; // Convert to annual for ISR calculation
-
+    const annualTaxableIncome = monthlyTaxableIncome * 12;
     const annualISR = calculateISR(annualTaxableIncome);
-    const monthlyISR = annualISR / 12; // Convert annual ISR back to monthly
-
+    const monthlyISR = annualISR / 12;
     const totalDeductions = cssDeduction + seguroEducativoDeduction + otherDeductions + monthlyISR;
     const netSalary = totalIncome - totalDeductions;
 
     setResult({
-      grossSalary,
-      overtimePay,
-      otherIncome,
-      cssDeduction,
-      seguroEducativoDeduction, // Add to result
-      monthlyISR,
-      otherDeductions,
-      totalIncome,
-      totalDeductions,
-      netSalary,
+      grossSalary, overtimePay, otherIncome, cssDeduction, seguroEducativoDeduction,
+      monthlyISR, otherDeductions, totalIncome, totalDeductions, netSalary,
     });
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-2xl mb-4">
-        <Link to="/">
-          <Button variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver al Inicio
-          </Button>
-        </Link>
-      </div>
-      <Card className="w-full max-w-2xl shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-primary">Cálculo de Salario Neto</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600 mb-4 text-center">
-            Ingrese los datos para calcular el salario neto. Este cálculo incluye deducciones básicas de CSS, Seguro Educativo e ISR.
-          </p>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <Card className="w-full shadow-none border-none">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold text-primary">Cálculo de Salario Neto</CardTitle>
+        <p className="text-sm text-gray-500">
+          Ingrese los datos para calcular el salario neto, incluyendo deducciones de CSS, S.E. e ISR.
+        </p>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               <FormField
                 control={form.control}
                 name="grossSalary"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Salario Bruto Mensual ($)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
+                    <FormControl><Input type="number" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -134,9 +87,7 @@ const Salario = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Horas Extras (cantidad)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
+                    <FormControl><Input type="number" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -147,9 +98,7 @@ const Salario = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Otros Ingresos ($)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
+                    <FormControl><Input type="number" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -160,40 +109,38 @@ const Salario = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Otras Deducciones ($)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
+                    <FormControl><Input type="number" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">Calcular Salario Neto</Button>
-            </form>
-          </Form>
-
-          {result && (
-            <div className="mt-8 p-4 border rounded-md bg-gray-50">
-              <h3 className="text-xl font-semibold mb-4 text-center">Resultados del Cálculo</h3>
-              <div className="space-y-2">
-                <p><strong>Salario Bruto Ingresado:</strong> ${result.grossSalary.toFixed(2)}</p>
-                <p><strong>Pago por Horas Extras:</strong> ${result.overtimePay.toFixed(2)}</p>
-                <p><strong>Otros Ingresos:</strong> ${result.otherIncome.toFixed(2)}</p>
-                <p><strong>Deducción CSS (9.75%):</strong> ${result.cssDeduction.toFixed(2)}</p>
-                <p><strong>Deducción Seguro Educativo (1.25%):</strong> ${result.seguroEducativoDeduction.toFixed(2)}</p>
-                <p><strong>Impuesto Sobre la Renta (ISR):</strong> ${result.monthlyISR.toFixed(2)}</p>
-                <p><strong>Otras Deducciones:</strong> ${result.otherDeductions.toFixed(2)}</p>
-                <p><strong>Ingresos Totales:</strong> ${result.totalIncome.toFixed(2)}</p>
-                <p><strong>Deducciones Totales:</strong> ${result.totalDeductions.toFixed(2)}</p>
-                <p className="text-lg font-bold mt-4">Salario Neto Estimado: ${result.netSalary.toFixed(2)}</p>
-              </div>
-              <p className="text-xs text-red-500 mt-4">
-                *Este cálculo es una estimación simplificada del Impuesto Sobre la Renta (ISR) y no considera todas las variables o deducciones permitidas por la ley panameña. Las leyes fiscales pueden cambiar. Consulte a un contador o profesional para un cálculo exacto y asesoría fiscal.
-              </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            <Button type="submit" className="w-full md:w-auto">Calcular Salario Neto</Button>
+          </form>
+        </Form>
+
+        {result && (
+          <div className="mt-8 p-4 border rounded-md bg-gray-50">
+            <h3 className="text-xl font-semibold mb-4 text-center">Resultados del Cálculo</h3>
+            <div className="space-y-2 text-sm">
+              <p><strong>Salario Bruto:</strong> ${result.grossSalary.toFixed(2)}</p>
+              <p><strong>Pago por Horas Extras:</strong> ${result.overtimePay.toFixed(2)}</p>
+              <p><strong>Otros Ingresos:</strong> ${result.otherIncome.toFixed(2)}</p>
+              <p><strong>Deducción CSS (9.75%):</strong> ${result.cssDeduction.toFixed(2)}</p>
+              <p><strong>Deducción S. Educativo (1.25%):</strong> ${result.seguroEducativoDeduction.toFixed(2)}</p>
+              <p><strong>Impuesto Sobre la Renta (ISR):</strong> ${result.monthlyISR.toFixed(2)}</p>
+              <p><strong>Otras Deducciones:</strong> ${result.otherDeductions.toFixed(2)}</p>
+              <p><strong>Ingresos Totales:</strong> ${result.totalIncome.toFixed(2)}</p>
+              <p><strong>Deducciones Totales:</strong> ${result.totalDeductions.toFixed(2)}</p>
+              <p className="text-lg font-bold mt-4">Salario Neto Estimado: ${result.netSalary.toFixed(2)}</p>
+            </div>
+            <p className="text-xs text-red-500 mt-4">
+              *Este cálculo es una estimación simplificada del ISR. Consulte a un contador para un cálculo exacto.
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

@@ -5,12 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format, differenceInDays, differenceInMonths, differenceInYears } from "date-fns";
-import { es } from "date-fns/locale"; // Import Spanish locale
-import { Link } from "react-router-dom";
+import { es } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
@@ -30,7 +28,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, ArrowLeft } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 
 const formSchema = z.object({
   contractType: z.enum(["indefinido", "definido", "obra_terminada"], {
@@ -62,41 +60,26 @@ const Liquidacion = () => {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const { contractType, startDate, endDate, monthlySalary, pendingVacationDays, pendingThirteenthMonth } = values;
 
-    // Basic calculations (simplified for demonstration)
     const yearsOfService = differenceInYears(endDate, startDate);
     const monthsOfService = differenceInMonths(endDate, startDate) % 12;
     const daysOfService = differenceInDays(endDate, startDate);
 
-    // Preaviso (Notice Period) - Simplified rules
     let preavisoDays = 0;
-    if (yearsOfService >= 2) {
-      preavisoDays = 30; // Example: 30 days for 2+ years
-    } else if (yearsOfService >= 1) {
-      preavisoDays = 15; // Example: 15 days for 1-2 years
-    } else if (monthsOfService >= 3) {
-      preavisoDays = 7; // Example: 7 days for 3-12 months
-    }
+    if (yearsOfService >= 2) preavisoDays = 30;
+    else if (yearsOfService >= 1) preavisoDays = 15;
+    else if (monthsOfService >= 3) preavisoDays = 7;
     const preaviso = (monthlySalary / 30) * preavisoDays;
 
-    // Antigüedad (Seniority Pay) - Only for indefinite contracts
     let antiguedad = 0;
     if (contractType === 'indefinido') {
-      if (yearsOfService >= 2) {
-        antiguedad = (monthlySalary / 4.33) * 3.4 * yearsOfService; // 3.4 weeks per year
-      } else if (yearsOfService >= 1) {
-        antiguedad = (monthlySalary / 4.33) * 1 * 12; // 1 week per month for 1st year
-      } else {
-        antiguedad = (monthlySalary / 4.33) * 1 * monthsOfService; // 1 week per month for less than 1 year
-      }
+      if (yearsOfService >= 2) antiguedad = (monthlySalary / 4.33) * 3.4 * yearsOfService;
+      else if (yearsOfService >= 1) antiguedad = (monthlySalary / 4.33) * 1 * 12;
+      else antiguedad = (monthlySalary / 4.33) * 1 * monthsOfService;
     }
 
-    // Vacaciones Proporcionales (Proportional Vacation)
     const dailySalary = monthlySalary / 30;
     const proportionalVacation = (daysOfService / 11) * dailySalary;
-
-    // Décimo Tercer Mes Proporcional (Proportional Thirteenth Month)
     const proportionalThirteenthMonth = (monthlySalary / 12) * (daysOfService / 30);
-
     const totalLiquidacion = preaviso + antiguedad + proportionalVacation + proportionalThirteenthMonth + (pendingVacationDays * dailySalary) + pendingThirteenthMonth;
 
     setResult({
@@ -114,25 +97,17 @@ const Liquidacion = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-2xl mb-4">
-        <Link to="/">
-          <Button variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver al Inicio
-          </Button>
-        </Link>
-      </div>
-      <Card className="w-full max-w-2xl shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-primary">Cálculo de Liquidación</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600 mb-4 text-center">
-            Ingrese los datos para calcular la liquidación. Tenga en cuenta que este es un cálculo simplificado y no reemplaza la asesoría legal.
-          </p>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <Card className="w-full shadow-none border-none">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold text-primary">Cálculo de Liquidación</CardTitle>
+        <p className="text-sm text-gray-500">
+          Ingrese los datos para calcular la liquidación. Este es un cálculo simplificado y no reemplaza la asesoría legal.
+        </p>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               <FormField
                 control={form.control}
                 name="contractType"
@@ -141,9 +116,7 @@ const Liquidacion = () => {
                     <FormLabel>Tipo de Contrato</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccione el tipo de contrato" />
-                        </SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Seleccione el tipo de contrato" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="indefinido">Indefinido</SelectItem>
@@ -157,6 +130,17 @@ const Liquidacion = () => {
               />
               <FormField
                 control={form.control}
+                name="monthlySalary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Salario Mensual ($)</FormLabel>
+                    <FormControl><Input type="number" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="startDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
@@ -164,33 +148,14 @@ const Liquidacion = () => {
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: es })
-                            ) : (
-                              <span>Seleccione una fecha</span>
-                            )}
+                          <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                            {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                          locale={es}
-                        />
+                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus locale={es} />
                       </PopoverContent>
                     </Popover>
                     <FormMessage />
@@ -206,48 +171,16 @@ const Liquidacion = () => {
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: es })
-                            ) : (
-                              <span>Seleccione una fecha</span>
-                            )}
+                          <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                            {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < form.getValues("startDate")
-                          }
-                          initialFocus
-                          locale={es}
-                        />
+                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < form.getValues("startDate")} initialFocus locale={es} />
                       </PopoverContent>
                     </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="monthlySalary"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Salario Mensual ($)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -257,10 +190,8 @@ const Liquidacion = () => {
                 name="pendingVacationDays"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Días de Vacaciones Pendientes (si aplica)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
+                    <FormLabel>Días de Vacaciones Pendientes</FormLabel>
+                    <FormControl><Input type="number" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -270,39 +201,37 @@ const Liquidacion = () => {
                 name="pendingThirteenthMonth"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Décimo Tercer Mes Pendiente (si aplica)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
+                    <FormLabel>Décimo Tercer Mes Pendiente ($)</FormLabel>
+                    <FormControl><Input type="number" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">Calcular Liquidación</Button>
-            </form>
-          </Form>
-
-          {result && (
-            <div className="mt-8 p-4 border rounded-md bg-gray-50">
-              <h3 className="text-xl font-semibold mb-4 text-center">Resultados del Cálculo</h3>
-              <div className="space-y-2">
-                <p><strong>Tiempo de Servicio:</strong> {result.yearsOfService} años, {result.monthsOfService} meses, {result.daysOfService % 30} días</p>
-                <p><strong>Preaviso:</strong> ${result.preaviso.toFixed(2)}</p>
-                <p><strong>Prima de Antigüedad:</strong> ${result.antiguedad.toFixed(2)}</p>
-                <p><strong>Vacaciones Proporcionales:</strong> ${result.proportionalVacation.toFixed(2)}</p>
-                <p><strong>Décimo Tercer Mes Proporcional:</strong> ${result.proportionalThirteenthMonth.toFixed(2)}</p>
-                {result.pendingVacationDays > 0 && <p><strong>Pago por Vacaciones Pendientes:</strong> ${result.pendingVacationDays.toFixed(2)}</p>}
-                {result.pendingThirteenthMonth > 0 && <p><strong>Décimo Tercer Mes Pendiente:</strong> ${result.pendingThirteenthMonth.toFixed(2)}</p>}
-                <p className="text-lg font-bold mt-4">Total Liquidación Estimada: ${result.totalLiquidacion.toFixed(2)}</p>
-              </div>
-              <p className="text-xs text-red-500 mt-4">
-                *Este cálculo es una estimación y asume una terminación por parte del empleador. La prima de antigüedad solo aplica a contratos indefinidos. Las leyes laborales de Panamá son complejas. Consulte a un profesional para un cálculo exacto.
-              </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            <Button type="submit" className="w-full md:w-auto">Calcular Liquidación</Button>
+          </form>
+        </Form>
+
+        {result && (
+          <div className="mt-8 p-4 border rounded-md bg-gray-50">
+            <h3 className="text-xl font-semibold mb-4 text-center">Resultados del Cálculo</h3>
+            <div className="space-y-2 text-sm">
+              <p><strong>Tiempo de Servicio:</strong> {result.yearsOfService} años, {result.monthsOfService} meses, {result.daysOfService % 30} días</p>
+              <p><strong>Preaviso:</strong> ${result.preaviso.toFixed(2)}</p>
+              <p><strong>Prima de Antigüedad:</strong> ${result.antiguedad.toFixed(2)}</p>
+              <p><strong>Vacaciones Proporcionales:</strong> ${result.proportionalVacation.toFixed(2)}</p>
+              <p><strong>Décimo Tercer Mes Proporcional:</strong> ${result.proportionalThirteenthMonth.toFixed(2)}</p>
+              {result.pendingVacationDays > 0 && <p><strong>Pago por Vacaciones Pendientes:</strong> ${result.pendingVacationDays.toFixed(2)}</p>}
+              {result.pendingThirteenthMonth > 0 && <p><strong>Décimo Tercer Mes Pendiente:</strong> ${result.pendingThirteenthMonth.toFixed(2)}</p>}
+              <p className="text-lg font-bold mt-4">Total Liquidación Estimada: ${result.totalLiquidacion.toFixed(2)}</p>
+            </div>
+            <p className="text-xs text-red-500 mt-4">
+              *Este cálculo es una estimación. La prima de antigüedad solo aplica a contratos indefinidos. Consulte a un profesional para un cálculo exacto.
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
