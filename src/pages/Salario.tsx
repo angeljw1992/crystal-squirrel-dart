@@ -38,6 +38,20 @@ const Salario = () => {
     },
   });
 
+  const calculateISR = (annualTaxableIncome: number): number => {
+    let isr = 0;
+    // Simplified ISR brackets for Panama (example, not official or exhaustive)
+    // These brackets are for annual income.
+    if (annualTaxableIncome <= 11000) {
+      isr = 0;
+    } else if (annualTaxableIncome <= 50000) {
+      isr = (annualTaxableIncome - 11000) * 0.15;
+    } else {
+      isr = (39000 * 0.15) + (annualTaxableIncome - 50000) * 0.25; // 39000 = 50000 - 11000
+    }
+    return isr;
+  };
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const { grossSalary, overtimeHours, otherIncome, otherDeductions } = values;
 
@@ -51,7 +65,15 @@ const Salario = () => {
     const overtimePay = overtimeHours * hourlyRate * 1.5; // Example: 1.5x for all overtime
 
     const totalIncome = grossSalary + overtimePay + otherIncome;
-    const totalDeductions = cssDeduction + otherDeductions;
+    
+    // Taxable income for ISR (gross income - CSS deduction)
+    const monthlyTaxableIncome = totalIncome - cssDeduction;
+    const annualTaxableIncome = monthlyTaxableIncome * 12; // Convert to annual for ISR calculation
+
+    const annualISR = calculateISR(annualTaxableIncome);
+    const monthlyISR = annualISR / 12; // Convert annual ISR back to monthly
+
+    const totalDeductions = cssDeduction + otherDeductions + monthlyISR;
     const netSalary = totalIncome - totalDeductions;
 
     setResult({
@@ -59,6 +81,7 @@ const Salario = () => {
       overtimePay,
       otherIncome,
       cssDeduction,
+      monthlyISR,
       otherDeductions,
       totalIncome,
       totalDeductions,
@@ -74,7 +97,7 @@ const Salario = () => {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600 mb-4 text-center">
-            Ingrese los datos para calcular el salario neto. Este cálculo incluye deducciones básicas de CSS.
+            Ingrese los datos para calcular el salario neto. Este cálculo incluye deducciones básicas de CSS e ISR.
           </p>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -142,13 +165,14 @@ const Salario = () => {
                 <p><strong>Pago por Horas Extras:</strong> ${result.overtimePay.toFixed(2)}</p>
                 <p><strong>Otros Ingresos:</strong> ${result.otherIncome.toFixed(2)}</p>
                 <p><strong>Deducción CSS (9.75%):</strong> ${result.cssDeduction.toFixed(2)}</p>
+                <p><strong>Impuesto Sobre la Renta (ISR):</strong> ${result.monthlyISR.toFixed(2)}</p>
                 <p><strong>Otras Deducciones:</strong> ${result.otherDeductions.toFixed(2)}</p>
                 <p><strong>Ingresos Totales:</strong> ${result.totalIncome.toFixed(2)}</p>
                 <p><strong>Deducciones Totales:</strong> ${result.totalDeductions.toFixed(2)}</p>
                 <p className="text-lg font-bold mt-4">Salario Neto Estimado: ${result.netSalary.toFixed(2)}</p>
               </div>
               <p className="text-xs text-red-500 mt-4">
-                *Este cálculo es una estimación simplificada. No incluye el Impuesto Sobre la Renta (ISR) ni otras deducciones específicas que puedan aplicar. Consulte a un contador o profesional para un cálculo exacto.
+                *Este cálculo es una estimación simplificada del Impuesto Sobre la Renta (ISR) y no considera todas las variables o deducciones permitidas por la ley panameña. Las leyes fiscales pueden cambiar. Consulte a un contador o profesional para un cálculo exacto y asesoría fiscal.
               </p>
             </div>
           )}

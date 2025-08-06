@@ -12,7 +12,7 @@ const Index = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-lg text-gray-700">
-            Seleccione el tipo de cálculo que desea realizar:
+            Seleccione el tipo de cálculo o herramienta que desea utilizar:
           </p>
           <div className="flex flex-col space-y-3">
             <Link to="/liquidacion">
@@ -24,9 +24,12 @@ const Index = () => {
             <Link to="/decimo-tercer-mes">
               <Button className="w-full py-3 text-lg">Cálculo de Décimo Tercer Mes</Button>
             </Link>
+            <Link to="/carta-renuncia">
+              <Button className="w-full py-3 text-lg">Generador de Carta de Renuncia</Button>
+            </Link>
           </div>
           <p className="text-sm text-gray-600 mt-6">
-            *Estas herramientas proporcionan estimaciones. Para cálculos oficiales, consulte a un experto.
+            *Estas herramientas proporcionan estimaciones. Para cálculos oficiales o asesoría legal/fiscal, consulte a un experto.
           </p>
         </CardContent>
       </Card>
