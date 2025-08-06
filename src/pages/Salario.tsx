@@ -59,6 +59,9 @@ const Salario = () => {
     // CSS (Caja de Seguro Social) - Employee contribution: 9.75%
     const cssDeduction = grossSalary * 0.0975;
 
+    // Seguro Educativo - Employee contribution: 1.25%
+    const seguroEducativoDeduction = grossSalary * 0.0125;
+
     // Overtime calculation (simplified: assuming 1.25x for regular overtime, 1.5x for night/holiday)
     // For simplicity, let's assume a fixed hourly rate and a general overtime multiplier
     const hourlyRate = grossSalary / 160; // Assuming 160 working hours per month
@@ -66,14 +69,14 @@ const Salario = () => {
 
     const totalIncome = grossSalary + overtimePay + otherIncome;
     
-    // Taxable income for ISR (gross income - CSS deduction)
-    const monthlyTaxableIncome = totalIncome - cssDeduction;
+    // Taxable income for ISR (gross income - CSS deduction - Seguro Educativo)
+    const monthlyTaxableIncome = totalIncome - cssDeduction - seguroEducativoDeduction;
     const annualTaxableIncome = monthlyTaxableIncome * 12; // Convert to annual for ISR calculation
 
     const annualISR = calculateISR(annualTaxableIncome);
     const monthlyISR = annualISR / 12; // Convert annual ISR back to monthly
 
-    const totalDeductions = cssDeduction + otherDeductions + monthlyISR;
+    const totalDeductions = cssDeduction + seguroEducativoDeduction + otherDeductions + monthlyISR;
     const netSalary = totalIncome - totalDeductions;
 
     setResult({
@@ -81,6 +84,7 @@ const Salario = () => {
       overtimePay,
       otherIncome,
       cssDeduction,
+      seguroEducativoDeduction, // Add to result
       monthlyISR,
       otherDeductions,
       totalIncome,
@@ -97,7 +101,7 @@ const Salario = () => {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600 mb-4 text-center">
-            Ingrese los datos para calcular el salario neto. Este cálculo incluye deducciones básicas de CSS e ISR.
+            Ingrese los datos para calcular el salario neto. Este cálculo incluye deducciones básicas de CSS, Seguro Educativo e ISR.
           </p>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -165,6 +169,7 @@ const Salario = () => {
                 <p><strong>Pago por Horas Extras:</strong> ${result.overtimePay.toFixed(2)}</p>
                 <p><strong>Otros Ingresos:</strong> ${result.otherIncome.toFixed(2)}</p>
                 <p><strong>Deducción CSS (9.75%):</strong> ${result.cssDeduction.toFixed(2)}</p>
+                <p><strong>Deducción Seguro Educativo (1.25%):</strong> ${result.seguroEducativoDeduction.toFixed(2)}</p>
                 <p><strong>Impuesto Sobre la Renta (ISR):</strong> ${result.monthlyISR.toFixed(2)}</p>
                 <p><strong>Otras Deducciones:</strong> ${result.otherDeductions.toFixed(2)}</p>
                 <p><strong>Ingresos Totales:</strong> ${result.totalIncome.toFixed(2)}</p>
