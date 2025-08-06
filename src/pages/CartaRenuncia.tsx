@@ -7,6 +7,7 @@ import * as z from "zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import html2pdf from 'html2pdf.js'; // Import html2pdf
+import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, DownloadIcon } from "lucide-react"; // Import DownloadIcon
+import { CalendarIcon, DownloadIcon, ArrowLeft } from "lucide-react"; // Import DownloadIcon
 
 const formSchema = z.object({
   name: z.string().min(1, "El nombre es requerido."),
@@ -102,6 +103,14 @@ C.I.P. No. ${idNumber}
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+      <div className="w-full max-w-3xl mb-4">
+        <Link to="/">
+          <Button variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Volver al Inicio
+          </Button>
+        </Link>
+      </div>
       <Card className="w-full max-w-3xl shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center text-primary">Generador de Carta de Renuncia</CardTitle>
