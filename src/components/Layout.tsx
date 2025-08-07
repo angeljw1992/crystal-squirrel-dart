@@ -1,9 +1,10 @@
 "use client";
 
-import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { HardHat, Calculator, Wallet, CalendarDays, FileText } from "lucide-react";
+import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
+import { HardHat, Calculator, Wallet, CalendarDays, FileText, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MadeWithDyad } from "@/components/made-with-dyad";
+import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { to: "/liquidacion", label: "Liquidación", icon: Calculator },
@@ -32,6 +33,16 @@ const Layout = () => {
 
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
         <div className="bg-card p-4 sm:p-6 md:p-8 rounded-xl shadow-lg shadow-neutral-200/50 dark:shadow-black/20 border">
+          {!isHomePage && (
+            <div className="mb-6">
+              <Link to="/">
+                <Button variant="outline" size="sm">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Volver al Inicio
+                </Button>
+              </Link>
+            </div>
+          )}
           {!isHomePage && (
             <nav className="flex justify-center border-b mb-8">
               {navLinks.map(({ to, label, icon: Icon }) => (
