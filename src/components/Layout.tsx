@@ -1,6 +1,6 @@
 "use client";
 
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { HardHat, Calculator, Wallet, CalendarDays, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -13,6 +13,9 @@ const navLinks = [
 ];
 
 const Layout = () => {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+
   return (
     <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 flex flex-col">
       <header className="bg-background border-b bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-900">
@@ -29,24 +32,26 @@ const Layout = () => {
 
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
         <div className="bg-card p-4 sm:p-6 md:p-8 rounded-xl shadow-lg shadow-neutral-200/50 dark:shadow-black/20 border">
-          <nav className="flex justify-center border-b mb-8">
-            {navLinks.map(({ to, label, icon: Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  cn(
-                    "flex flex-col items-center gap-1 p-3 text-center text-xs font-medium text-neutral-600 hover:text-primary transition-colors duration-200 w-1/4",
-                    "sm:w-auto sm:flex-row sm:gap-2 sm:px-4 sm:py-3 sm:text-sm sm:border-b-2 sm:border-transparent",
-                    isActive ? "text-primary font-semibold sm:border-primary" : "font-medium"
-                  )
-                }
-              >
-                <Icon className="h-5 w-5" />
-                <span>{label}</span>
-              </NavLink>
-            ))}
-          </nav>
+          {!isHomePage && (
+            <nav className="flex justify-center border-b mb-8">
+              {navLinks.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex flex-col items-center gap-1 p-3 text-center text-xs font-medium text-neutral-600 hover:text-primary transition-colors duration-200 w-1/4",
+                      "sm:w-auto sm:flex-row sm:gap-2 sm:px-4 sm:py-3 sm:text-sm sm:border-b-2 sm:border-transparent",
+                      isActive ? "text-primary font-semibold sm:border-primary" : "font-medium"
+                    )
+                  }
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{label}</span>
+                </NavLink>
+              ))}
+            </nav>
+          )}
           <Outlet />
         </div>
       </main>
