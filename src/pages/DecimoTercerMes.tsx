@@ -67,7 +67,7 @@ const DecimoTercerMes = () => {
     <FormField control={form.control} name={`salaries.${month}`} render={({ field }) => (
       <FormItem>
         <FormLabel>Ingresos de {label} ($)</FormLabel>
-        <FormControl><Input type="number" placeholder="0.00" {...field} /></FormControl>
+        <FormControl><Input type="number" placeholder="0.00" step="0.01" {...field} /></FormControl>
         <FormMessage />
       </FormItem>
     )} />

@@ -67,10 +67,10 @@ const Salario = () => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <FormField control={form.control} name="grossSalary" render={({ field }) => (<FormItem><FormLabel>Salario Bruto Mensual ($)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="overtimeHours" render={({ field }) => (<FormItem><FormLabel>Horas Extras (cantidad)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="otherIncome" render={({ field }) => (<FormItem><FormLabel>Otros Ingresos ($)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="otherDeductions" render={({ field }) => (<FormItem><FormLabel>Otras Deducciones ($)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="grossSalary" render={({ field }) => (<FormItem><FormLabel>Salario Bruto Mensual ($)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="overtimeHours" render={({ field }) => (<FormItem><FormLabel>Horas Extras (cantidad)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="otherIncome" render={({ field }) => (<FormItem><FormLabel>Otros Ingresos ($)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="otherDeductions" render={({ field }) => (<FormItem><FormLabel>Otras Deducciones ($)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
             </div>
             <Button type="submit" className="w-full md:w-auto" size="lg">Calcular Salario Neto</Button>
           </form>
