@@ -31,22 +31,21 @@ const Layout = () => {
 
       <main className="container mx-auto p-4 md:p-8 flex-grow">
         <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl shadow-md border border-gray-200">
-          <nav className="flex flex-wrap justify-center border-b -mt-2 mb-6">
+          <nav className="flex justify-center border-b -mt-2 mb-6">
             {navLinks.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center space-x-2 px-3 py-3 text-sm font-medium text-gray-600 hover:text-primary transition-colors duration-200",
-                    isActive 
-                      ? "border-b-2 border-primary text-primary" 
-                      : "border-b-2 border-transparent"
+                    "flex flex-col items-center space-y-1 p-2 text-center text-xs font-medium text-gray-600 hover:text-primary transition-colors duration-200 w-1/4",
+                    "sm:w-auto sm:flex-row sm:space-y-0 sm:space-x-2 sm:px-3 sm:py-3 sm:text-sm sm:border-b-2 sm:border-transparent",
+                    isActive ? "text-primary sm:border-primary" : ""
                   )
                 }
               >
                 <Icon className="h-5 w-5" />
-                <span className="hidden sm:inline">{label}</span>
+                <span>{label}</span>
               </NavLink>
             ))}
           </nav>
