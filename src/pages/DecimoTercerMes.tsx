@@ -39,9 +39,9 @@ const formSchema = z.object({
 });
 
 const periodDescriptions: { [key: string]: string } = {
-  primer: "Período de cálculo: 1 de Diciembre - 31 de Marzo.",
-  segundo: "Período de cálculo: 1 de Abril - 31 de Julio.",
-  tercer: "Período de cálculo: 1 de Agosto - 30 de Noviembre.",
+  primer: "Se calcula sumando los salarios de Diciembre, Enero, Febrero y Marzo.",
+  segundo: "Se calcula sumando los salarios de Abril, Mayo, Junio y Julio.",
+  tercer: "Se calcula sumando los salarios de Agosto, Septiembre, Octubre y Noviembre.",
 };
 
 const DecimoTercerMes = () => {
