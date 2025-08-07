@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, DownloadIcon } from "lucide-react";
+import AdBanner from "@/components/AdBanner";
 
 const formSchema = z.object({
   name: z.string().min(1, "El nombre es requerido."),
@@ -68,7 +69,7 @@ const CartaRenuncia = () => {
           Por medio de la presente, yo, <span className="font-semibold">{name}</span>, con cédula de identidad personal No. <span className="font-semibold">{idNumber}</span>, presento mi renuncia voluntaria e irrevocable al cargo de <span className="font-semibold">{jobTitle}</span>, que he venido desempeñando desde el {formattedStartDate}.
         </p>
         <p className="mb-6 text-justify indent-8">
-          Esta decisión será efectiva a partir del día <span className="font-semibold">{formattedEndDate}</span>, siendo este mi último día de labores. {reason.trim()}
+          Esta decisión será efectiva a partir del día <span className="font-semibold">{endDate ? format(endDate, "dd 'de' MMMM 'de' yyyy", { locale: es }) : ''}</span>, siendo este mi último día de labores. {reason.trim()}
         </p>
         <p className="mb-12 text-justify indent-8">
           Agradezco la oportunidad y la confianza depositada en mí durante mi tiempo en la empresa.
@@ -116,6 +117,7 @@ const CartaRenuncia = () => {
             <p className="text-xs text-neutral-600 mt-4 text-center">*Este es un borrador. Revíselo cuidadosamente antes de firmar y entregar.</p>
           </div>
         )}
+        <AdBanner />
       </CardContent>
     </Card>
   );

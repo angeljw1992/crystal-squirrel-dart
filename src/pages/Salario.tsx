@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { DollarSign, Clock, PlusCircle, MinusCircle, Shield, BookOpen, Percent } from "lucide-react";
+import { DollarSign, Clock, MinusCircle, Shield, BookOpen, Percent } from "lucide-react";
+import AdBanner from "@/components/AdBanner";
 
 const formSchema = z.object({
   grossSalary: z.coerce.number().min(0, "El salario bruto debe ser un número positivo."),
@@ -102,6 +103,7 @@ const Salario = () => {
             <p className="text-xs text-neutral-500 mt-6 text-center">*Este cálculo es una estimación. Consulte a un profesional para un cálculo exacto.</p>
           </div>
         )}
+        <AdBanner />
       </CardContent>
     </Card>
   );

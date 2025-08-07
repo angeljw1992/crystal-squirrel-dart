@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Calculator, Wallet, CalendarDays, FileText } from "lucide-react";
+import AdBanner from "@/components/AdBanner";
 
 const tools = [
   {
@@ -66,6 +67,7 @@ const Index = () => {
       <div className="mt-12 text-center text-sm text-neutral-500">
         <p>Palabras clave: cálculo de liquidación Panamá, cálculo de salario, carta de renuncia, décimo tercer mes, prestaciones laborales, salario neto, derechos laborales, código de trabajo Panamá, calculadora laboral.</p>
       </div>
+      <AdBanner />
     </div>
   );
 };

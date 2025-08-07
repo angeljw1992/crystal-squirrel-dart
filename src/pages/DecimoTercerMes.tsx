@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import AdBanner from "@/components/AdBanner";
 
 const formSchema = z.object({
   periodType: z.enum(["primer", "segundo", "tercer"], {
@@ -124,6 +125,7 @@ const DecimoTercerMes = () => {
             </p>
           </div>
         )}
+        <AdBanner />
       </CardContent>
     </Card>
   );

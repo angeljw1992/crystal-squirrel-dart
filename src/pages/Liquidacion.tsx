@@ -15,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Clock, FileText as FileTextIcon, Award, Sun, Gift } from "lucide-react";
+import { CalendarIcon, Clock, Award, Sun, Gift } from "lucide-react";
+import AdBanner from "@/components/AdBanner";
 
 const formSchema = z.object({
   contractType: z.enum(["indefinido", "definido", "obra_terminada"], { required_error: "El tipo de contrato es requerido." }),
@@ -106,6 +107,7 @@ const Liquidacion = () => {
             <p className="text-xs text-neutral-500 mt-6 text-center">*Este cálculo es una estimación. Consulte a un profesional para un cálculo exacto.</p>
           </div>
         )}
+        <AdBanner />
       </CardContent>
     </Card>
   );
