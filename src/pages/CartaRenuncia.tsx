@@ -66,13 +66,13 @@ const CartaRenuncia = () => {
 
   return (
     <Card className="w-full shadow-none border-none">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold text-primary">Generador de Carta de Renuncia</CardTitle>
-        <p className="text-sm text-gray-500">
+      <CardHeader className="p-0 mb-8">
+        <CardTitle className="text-xl text-foreground">Generador de Carta de Renuncia</CardTitle>
+        <p className="text-sm text-neutral-600">
           Complete los campos para generar su carta de renuncia (se generarán 2 copias).
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -103,19 +103,19 @@ const CartaRenuncia = () => {
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full md:w-auto">Generar Carta</Button>
+            <Button type="submit" className="w-full md:w-auto" size="lg">Generar Carta</Button>
           </form>
         </Form>
 
         {letterContent && (
-          <div className="mt-8 p-4 border rounded-md bg-gray-50">
-            <h3 className="text-xl font-semibold mb-4 text-center">Borrador de Carta de Renuncia</h3>
-            <div ref={letterRef} className="p-6 bg-white rounded-md shadow-inner">
-              <div className="whitespace-pre-wrap font-serif text-sm mb-10 pb-10 border-b-2 border-dashed border-gray-300">{letterContent}</div>
+          <div className="mt-12 p-6 border rounded-lg bg-neutral-50">
+            <h3 className="text-lg font-semibold mb-6 text-center text-foreground">Borrador de Carta de Renuncia</h3>
+            <div ref={letterRef} className="p-8 bg-white rounded-md shadow-inner border">
+              <div className="whitespace-pre-wrap font-serif text-sm mb-10 pb-10 border-b-2 border-dashed border-neutral-300">{letterContent}</div>
               <div className="whitespace-pre-wrap font-serif text-sm">{letterContent}</div>
             </div>
-            <Button onClick={handleDownloadPdf} className="w-full mt-6"><DownloadIcon className="mr-2 h-4 w-4" /> Descargar PDF (2 Copias)</Button>
-            <p className="text-xs text-gray-600 mt-4 text-center">*Este es un borrador. Revíselo cuidadosamente.</p>
+            <Button onClick={handleDownloadPdf} className="w-full mt-8" size="lg"><DownloadIcon className="mr-2 h-5 w-5" /> Descargar PDF (2 Copias)</Button>
+            <p className="text-xs text-neutral-600 mt-4 text-center">*Este es un borrador. Revíselo cuidadosamente.</p>
           </div>
         )}
       </CardContent>

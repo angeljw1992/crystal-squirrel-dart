@@ -60,13 +60,13 @@ const Salario = () => {
 
   return (
     <Card className="w-full shadow-none border-none">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold text-primary">Cálculo de Salario Neto</CardTitle>
-        <p className="text-sm text-gray-500">
+      <CardHeader className="p-0 mb-8">
+        <CardTitle className="text-xl text-foreground">Cálculo de Salario Neto</CardTitle>
+        <p className="text-sm text-neutral-600">
           Ingrese los datos para calcular el salario neto, incluyendo deducciones de CSS, S.E. e ISR.
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -115,26 +115,26 @@ const Salario = () => {
                 )}
               />
             </div>
-            <Button type="submit" className="w-full md:w-auto">Calcular Salario Neto</Button>
+            <Button type="submit" className="w-full md:w-auto" size="lg">Calcular Salario Neto</Button>
           </form>
         </Form>
 
         {result && (
-          <div className="mt-8 p-4 border rounded-md bg-gray-50">
-            <h3 className="text-xl font-semibold mb-4 text-center">Resultados del Cálculo</h3>
-            <div className="space-y-2 text-sm">
-              <p><strong>Salario Bruto:</strong> ${result.grossSalary.toFixed(2)}</p>
-              <p><strong>Pago por Horas Extras:</strong> ${result.overtimePay.toFixed(2)}</p>
-              <p><strong>Otros Ingresos:</strong> ${result.otherIncome.toFixed(2)}</p>
-              <p><strong>Deducción CSS (9.75%):</strong> ${result.cssDeduction.toFixed(2)}</p>
-              <p><strong>Deducción S. Educativo (1.25%):</strong> ${result.seguroEducativoDeduction.toFixed(2)}</p>
-              <p><strong>Impuesto Sobre la Renta (ISR):</strong> ${result.monthlyISR.toFixed(2)}</p>
-              <p><strong>Otras Deducciones:</strong> ${result.otherDeductions.toFixed(2)}</p>
-              <p><strong>Ingresos Totales:</strong> ${result.totalIncome.toFixed(2)}</p>
-              <p><strong>Deducciones Totales:</strong> ${result.totalDeductions.toFixed(2)}</p>
-              <p className="text-lg font-bold mt-4">Salario Neto Estimado: ${result.netSalary.toFixed(2)}</p>
+          <div className="mt-12 p-6 border rounded-lg bg-neutral-50">
+            <h3 className="text-lg font-semibold mb-6 text-center text-foreground">Resultados del Cálculo</h3>
+            <div className="space-y-3 text-sm text-neutral-800">
+              <p><strong className="font-semibold text-neutral-900">Salario Bruto:</strong> ${result.grossSalary.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Pago por Horas Extras:</strong> ${result.overtimePay.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Otros Ingresos:</strong> ${result.otherIncome.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Deducción CSS (9.75%):</strong> ${result.cssDeduction.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Deducción S. Educativo (1.25%):</strong> ${result.seguroEducativoDeduction.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Impuesto Sobre la Renta (ISR):</strong> ${result.monthlyISR.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Otras Deducciones:</strong> ${result.otherDeductions.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Ingresos Totales:</strong> ${result.totalIncome.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Deducciones Totales:</strong> ${result.totalDeductions.toFixed(2)}</p>
+              <p className="text-lg font-bold mt-6 pt-4 border-t !text-primary-700">Salario Neto Estimado: ${result.netSalary.toFixed(2)}</p>
             </div>
-            <p className="text-xs text-red-500 mt-4">
+            <p className="text-xs text-destructive-700 mt-6 text-center">
               *Este cálculo es una estimación simplificada del ISR. Consulte a un contador para un cálculo exacto.
             </p>
           </div>

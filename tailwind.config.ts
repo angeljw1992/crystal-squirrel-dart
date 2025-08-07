@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-export default {
+const config = {
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
@@ -27,6 +27,19 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          ...{
+            50: "hsl(220 100% 97%)",
+            100: "hsl(220 100% 94%)",
+            200: "hsl(220 98% 89%)",
+            300: "hsl(220 95% 83%)",
+            400: "hsl(221 89% 76%)",
+            500: "hsl(221 83% 68%)",
+            600: "hsl(221 77% 59%)",
+            700: "hsl(222 76% 51%)",
+            800: "hsl(222 78% 43%)",
+            900: "hsl(223 78% 35%)",
+            950: "hsl(223 81% 22%)",
+          },
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -52,38 +65,54 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        neutral: {
+          50: "hsl(210 20% 98%)",
+          100: "hsl(210 20% 96%)",
+          200: "hsl(214 18% 93%)",
+          300: "hsl(215 16% 88%)",
+          400: "hsl(215 14% 80%)",
+          500: "hsl(217 13% 71%)",
+          600: "hsl(218 13% 60%)",
+          700: "hsl(220 13% 46%)",
+          800: "hsl(221 14% 34%)",
+          900: "hsl(222 15% 25%)",
+          950: "hsl(224 16% 15%)",
         },
       },
       borderRadius: {
+        xl: "calc(var(--radius) + 8px)",
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 8px)",
+      },
+      fontSize: {
+        xs: "12px",
+        sm: "15px",
+        base: "16px",
+        lg: "18px",
+        xl: "24px",
+        "2xl": "30px",
+        "3xl": "37px",
+        "4xl": "46px",
+      },
+      lineHeight: {
+        heading: "1.2",
+        body: "1.5",
+        ui: "1.4",
+      },
+      letterSpacing: {
+        heading: "-0.02em",
+        body: "0em",
+        caps: "0.05em",
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
@@ -94,3 +123,5 @@ export default {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
+export default config;

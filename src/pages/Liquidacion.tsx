@@ -98,13 +98,13 @@ const Liquidacion = () => {
 
   return (
     <Card className="w-full shadow-none border-none">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold text-primary">Cálculo de Liquidación</CardTitle>
-        <p className="text-sm text-gray-500">
+      <CardHeader className="p-0 mb-8">
+        <CardTitle className="text-xl text-foreground">Cálculo de Liquidación</CardTitle>
+        <p className="text-sm text-neutral-600">
           Ingrese los datos para calcular la liquidación. Este es un cálculo simplificado y no reemplaza la asesoría legal.
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -208,24 +208,24 @@ const Liquidacion = () => {
                 )}
               />
             </div>
-            <Button type="submit" className="w-full md:w-auto">Calcular Liquidación</Button>
+            <Button type="submit" className="w-full md:w-auto" size="lg">Calcular Liquidación</Button>
           </form>
         </Form>
 
         {result && (
-          <div className="mt-8 p-4 border rounded-md bg-gray-50">
-            <h3 className="text-xl font-semibold mb-4 text-center">Resultados del Cálculo</h3>
-            <div className="space-y-2 text-sm">
-              <p><strong>Tiempo de Servicio:</strong> {result.yearsOfService} años, {result.monthsOfService} meses, {result.daysOfService % 30} días</p>
-              <p><strong>Preaviso:</strong> ${result.preaviso.toFixed(2)}</p>
-              <p><strong>Prima de Antigüedad:</strong> ${result.antiguedad.toFixed(2)}</p>
-              <p><strong>Vacaciones Proporcionales:</strong> ${result.proportionalVacation.toFixed(2)}</p>
-              <p><strong>Décimo Tercer Mes Proporcional:</strong> ${result.proportionalThirteenthMonth.toFixed(2)}</p>
-              {result.pendingVacationDays > 0 && <p><strong>Pago por Vacaciones Pendientes:</strong> ${result.pendingVacationDays.toFixed(2)}</p>}
-              {result.pendingThirteenthMonth > 0 && <p><strong>Décimo Tercer Mes Pendiente:</strong> ${result.pendingThirteenthMonth.toFixed(2)}</p>}
-              <p className="text-lg font-bold mt-4">Total Liquidación Estimada: ${result.totalLiquidacion.toFixed(2)}</p>
+          <div className="mt-12 p-6 border rounded-lg bg-neutral-50">
+            <h3 className="text-lg font-semibold mb-6 text-center text-foreground">Resultados del Cálculo</h3>
+            <div className="space-y-3 text-sm text-neutral-800">
+              <p><strong className="font-semibold text-neutral-900">Tiempo de Servicio:</strong> {result.yearsOfService} años, {result.monthsOfService} meses, {result.daysOfService % 30} días</p>
+              <p><strong className="font-semibold text-neutral-900">Preaviso:</strong> ${result.preaviso.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Prima de Antigüedad:</strong> ${result.antiguedad.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Vacaciones Proporcionales:</strong> ${result.proportionalVacation.toFixed(2)}</p>
+              <p><strong className="font-semibold text-neutral-900">Décimo Tercer Mes Proporcional:</strong> ${result.proportionalThirteenthMonth.toFixed(2)}</p>
+              {result.pendingVacationDays > 0 && <p><strong className="font-semibold text-neutral-900">Pago por Vacaciones Pendientes:</strong> ${result.pendingVacationDays.toFixed(2)}</p>}
+              {result.pendingThirteenthMonth > 0 && <p><strong className="font-semibold text-neutral-900">Décimo Tercer Mes Pendiente:</strong> ${result.pendingThirteenthMonth.toFixed(2)}</p>}
+              <p className="text-lg font-bold mt-6 pt-4 border-t !text-primary-700">Total Liquidación Estimada: ${result.totalLiquidacion.toFixed(2)}</p>
             </div>
-            <p className="text-xs text-red-500 mt-4">
+            <p className="text-xs text-destructive-700 mt-6 text-center">
               *Este cálculo es una estimación. La prima de antigüedad solo aplica a contratos indefinidos. Consulte a un profesional para un cálculo exacto.
             </p>
           </div>

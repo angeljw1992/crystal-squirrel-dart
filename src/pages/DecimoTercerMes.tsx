@@ -68,13 +68,13 @@ const DecimoTercerMes = () => {
 
   return (
     <Card className="w-full shadow-none border-none">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold text-primary">Cálculo de Décimo Tercer Mes</CardTitle>
-        <p className="text-sm text-gray-500">
+      <CardHeader className="p-0 mb-8">
+        <CardTitle className="text-xl text-foreground">Cálculo de Décimo Tercer Mes</CardTitle>
+        <p className="text-sm text-neutral-600">
           Seleccione el período e ingrese los salarios brutos para calcular el décimo.
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -98,19 +98,19 @@ const DecimoTercerMes = () => {
               {selectedPeriod === 'segundo' && <> {renderMonthInput('april', 'Abril')} {renderMonthInput('may', 'Mayo')} {renderMonthInput('june', 'Junio')} {renderMonthInput('july', 'Julio')} </>}
               {selectedPeriod === 'tercer' && <> {renderMonthInput('august', 'Agosto')} {renderMonthInput('september', 'Septiembre')} {renderMonthInput('october', 'Octubre')} {renderMonthInput('november', 'Noviembre')} </>}
             </div>
-            <Button type="submit" className="w-full md:w-auto">Calcular Décimo</Button>
+            <Button type="submit" className="w-full md:w-auto" size="lg">Calcular Décimo</Button>
           </form>
         </Form>
 
         {result && (
-          <div className="mt-8 p-4 border rounded-md bg-gray-50">
-            <h3 className="text-xl font-semibold mb-4 text-center">Resultados del Cálculo</h3>
-            <div className="space-y-2 text-sm">
-              <p><strong>Período:</strong> {result.periodType === "primer" ? "1ro (Abril)" : result.periodType === "segundo" ? "2do (Agosto)" : "3ro (Diciembre)"}</p>
-              <p><strong>Total de Ingresos en el Período:</strong> ${result.totalEarnings.toFixed(2)}</p>
-              <p className="text-lg font-bold mt-4">Monto del Décimo Tercer Mes: ${result.decimoTercerMesAmount.toFixed(2)}</p>
+          <div className="mt-12 p-6 border rounded-lg bg-neutral-50">
+            <h3 className="text-lg font-semibold mb-6 text-center text-foreground">Resultados del Cálculo</h3>
+            <div className="space-y-3 text-sm text-neutral-800">
+              <p><strong className="font-semibold text-neutral-900">Período:</strong> {result.periodType === "primer" ? "1ro (Abril)" : result.periodType === "segundo" ? "2do (Agosto)" : "3ro (Diciembre)"}</p>
+              <p><strong className="font-semibold text-neutral-900">Total de Ingresos en el Período:</strong> ${result.totalEarnings.toFixed(2)}</p>
+              <p className="text-lg font-bold mt-6 pt-4 border-t !text-primary-700">Monto del Décimo Tercer Mes: ${result.decimoTercerMesAmount.toFixed(2)}</p>
             </div>
-            <p className="text-xs text-red-500 mt-4">
+            <p className="text-xs text-destructive-700 mt-6 text-center">
               *Este cálculo es una estimación. Consulte a un profesional para un cálculo exacto.
             </p>
           </div>
