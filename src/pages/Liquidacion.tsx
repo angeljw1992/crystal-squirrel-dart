@@ -178,7 +178,7 @@ const Liquidacion = () => {
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < form.getValues("startDate")} initialFocus locale={es} />
+                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < form.getValues("startDate")} initialFocus locale={es} />
                       </PopoverContent>
                     </Popover>
                     <FormMessage />
