@@ -23,12 +23,12 @@ const Layout = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-center">
             <Link to="/" className="flex items-center gap-4 text-foreground transition-colors group">
-              <HardHat className="h-12 w-12 text-primary/80 group-hover:text-primary transition-colors" />
+              <HardHat className="h-16 w-16 text-primary/80 group-hover:text-primary transition-colors" />
               <div className="text-left">
-                <h1 className="text-lg font-bold uppercase leading-tight text-neutral-800 dark:text-neutral-100 group-hover:text-primary transition-colors">
+                <h1 className="text-xl font-bold uppercase leading-tight text-neutral-800 dark:text-neutral-100 group-hover:text-primary transition-colors">
                   Cálculo de Prestaciones
                 </h1>
-                <p className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
+                <p className="text-sm font-medium uppercase text-neutral-500 dark:text-neutral-400">
                   y Derechos Adquiridos en Panamá
                 </p>
               </div>

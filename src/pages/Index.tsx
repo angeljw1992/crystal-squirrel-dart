@@ -34,7 +34,7 @@ const Index = () => {
   return (
     <div className="w-full">
       <div className="text-center mb-12">
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-primary mb-4">
           Su Asistente Laboral en Panamá
         </h1>
         <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
