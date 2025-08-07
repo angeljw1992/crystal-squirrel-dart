@@ -1,7 +1,7 @@
 "use client";
 
 import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
-import { Calculator, Wallet, CalendarDays, FileText, ArrowLeft } from "lucide-react";
+import { Calculator, Wallet, CalendarDays, FileText, ArrowLeft, HardHat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
@@ -20,10 +20,18 @@ const Layout = () => {
   return (
     <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 flex flex-col">
       <header className="bg-background border-b bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-900">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-center">
-            <Link to="/" className="text-2xl font-bold text-foreground hover:text-primary transition-colors">
-              Calculadora Laboral Panamá
+            <Link to="/" className="flex items-center gap-4 text-foreground transition-colors group">
+              <HardHat className="h-12 w-12 text-primary/80 group-hover:text-primary transition-colors" />
+              <div className="text-left">
+                <h1 className="text-lg font-bold uppercase leading-tight text-neutral-800 dark:text-neutral-100 group-hover:text-primary transition-colors">
+                  Cálculo de Prestaciones
+                </h1>
+                <p className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
+                  y Derechos Adquiridos en Panamá
+                </p>
+              </div>
             </Link>
           </div>
         </div>
