@@ -38,6 +38,12 @@ const formSchema = z.object({
   }),
 });
 
+const periodDescriptions: { [key: string]: string } = {
+  primer: "Período de cálculo: 1 de Diciembre - 31 de Marzo.",
+  segundo: "Período de cálculo: 1 de Abril - 31 de Julio.",
+  tercer: "Período de cálculo: 1 de Agosto - 30 de Noviembre.",
+};
+
 const DecimoTercerMes = () => {
   const [result, setResult] = useState<any>(null);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -85,11 +91,14 @@ const DecimoTercerMes = () => {
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Seleccione un período" /></SelectTrigger></FormControl>
                       <SelectContent>
-                        <SelectItem value="primer">1er Período (15 de Abril)</SelectItem>
-                        <SelectItem value="segundo">2do Período (15 de Agosto)</SelectItem>
-                        <SelectItem value="tercer">3er Período (15 de Diciembre)</SelectItem>
+                        <SelectItem value="primer">1er Período (Pago: 15 de Abril)</SelectItem>
+                        <SelectItem value="segundo">2do Período (Pago: 15 de Agosto)</SelectItem>
+                        <SelectItem value="tercer">3er Período (Pago: 15 de Diciembre)</SelectItem>
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-neutral-500 pt-1">
+                      {periodDescriptions[selectedPeriod as keyof typeof periodDescriptions]}
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -106,7 +115,7 @@ const DecimoTercerMes = () => {
           <div className="mt-12 p-6 border rounded-lg bg-neutral-50">
             <h3 className="text-lg font-semibold mb-6 text-center text-foreground">Resultados del Cálculo</h3>
             <div className="space-y-3 text-sm text-neutral-800">
-              <p><strong className="font-semibold text-neutral-900">Período:</strong> {result.periodType === "primer" ? "1ro (Abril)" : result.periodType === "segundo" ? "2do (Agosto)" : "3ro (Diciembre)"}</p>
+              <p><strong className="font-semibold text-neutral-900">Período:</strong> {result.periodType === "primer" ? "1ro (Pago: Abril)" : result.periodType === "segundo" ? "2do (Pago: Agosto)" : "3ro (Pago: Diciembre)"}</p>
               <p><strong className="font-semibold text-neutral-900">Total de Ingresos en el Período:</strong> ${result.totalEarnings.toFixed(2)}</p>
               <p className="text-lg font-bold mt-6 pt-4 border-t !text-primary-700">Monto del Décimo Tercer Mes: ${result.decimoTercerMesAmount.toFixed(2)}</p>
             </div>
