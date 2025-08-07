@@ -5,7 +5,6 @@ import { Calculator, Wallet, CalendarDays, FileText, ArrowLeft } from "lucide-re
 import { cn } from "@/lib/utils";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
-import Logo from "@/components/Logo";
 
 const navLinks = [
   { to: "/liquidacion", label: "Liquidación", icon: Calculator },
@@ -23,7 +22,9 @@ const Layout = () => {
       <header className="bg-background border-b bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-center">
-            <Logo />
+            <Link to="/" className="text-2xl font-bold text-foreground hover:text-primary transition-colors">
+              Calculadora Laboral Panamá
+            </Link>
           </div>
         </div>
       </header>
