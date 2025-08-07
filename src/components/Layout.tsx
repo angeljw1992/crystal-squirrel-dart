@@ -1,10 +1,11 @@
 "use client";
 
 import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
-import { HardHat, Calculator, Wallet, CalendarDays, FileText, ArrowLeft } from "lucide-react";
+import { Calculator, Wallet, CalendarDays, FileText, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
+import Logo from "@/components/Logo";
 
 const navLinks = [
   { to: "/liquidacion", label: "Liquidación", icon: Calculator },
@@ -21,12 +22,8 @@ const Layout = () => {
     <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 flex flex-col">
       <header className="bg-background border-b bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-center space-x-4">
-            <HardHat className="h-10 w-10 md:h-12 md:w-12 text-primary" />
-            <div>
-              <h1 className="text-xl md:text-2xl text-primary-700 dark:text-primary-400">CÁLCULO DE PRESTACIONES</h1>
-              <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 tracking-caps uppercase">Y DERECHOS ADQUIRIDOS EN PANAMÁ</p>
-            </div>
+          <div className="flex items-center justify-center">
+            <Logo />
           </div>
         </div>
       </header>
