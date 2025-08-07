@@ -14,21 +14,21 @@ const navLinks = [
 
 const Layout = () => {
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col">
-      <header className="bg-background border-b">
+    <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 flex flex-col">
+      <header className="bg-background border-b bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-950 dark:to-neutral-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-center space-x-4">
             <HardHat className="h-10 w-10 md:h-12 md:w-12 text-primary" />
             <div>
-              <h1 className="text-xl md:text-2xl text-primary-700">CÁLCULO DE PRESTACIONES</h1>
-              <p className="text-xs md:text-sm text-neutral-600 tracking-caps uppercase">Y DERECHOS ADQUIRIDOS EN PANAMÁ</p>
+              <h1 className="text-xl md:text-2xl text-primary-700 dark:text-primary-400">CÁLCULO DE PRESTACIONES</h1>
+              <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 tracking-caps uppercase">Y DERECHOS ADQUIRIDOS EN PANAMÁ</p>
             </div>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
-        <div className="bg-card p-4 sm:p-6 md:p-8 rounded-lg shadow-sm border">
+        <div className="bg-card p-4 sm:p-6 md:p-8 rounded-xl shadow-lg shadow-neutral-200/50 dark:shadow-black/20 border">
           <nav className="flex justify-center border-b mb-8">
             {navLinks.map(({ to, label, icon: Icon }) => (
               <NavLink
