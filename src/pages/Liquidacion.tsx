@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -16,10 +16,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Clock, Award, Sun, Gift, ShieldCheck, Megaphone } from "lucide-react";
+import { CalendarIcon, Clock, Award, Sun, Gift, ShieldCheck, Megaphone, AlertTriangle } from "lucide-react";
 import AdBanner from "@/components/AdBanner";
 
 const formSchema = z.object({
+  contractType: z.enum(["indefinido", "definido"], { required_error: "El tipo de contrato es requerido." }),
   terminationReason: z.enum(["mutuo_acuerdo", "despido_justificado", "despido_injustificado", "renuncia", "obra_terminada"], { required_error: "El motivo de terminación es requerido." }),
   startDate: z.date({ required_error: "La fecha de inicio es requerida." }),
   endDate: z.date({ required_error: "La fecha de fin es requerida." }),
@@ -48,8 +49,14 @@ const Liquidacion = () => {
 
   const terminationReason = form.watch("terminationReason");
 
+  useEffect(() => {
+    if (terminationReason === 'obra_terminada') {
+      form.setValue('contractType', 'definido');
+    }
+  }, [terminationReason, form]);
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const { startDate, endDate, monthlySalary, pendingVacationDays, pendingThirteenthMonth } = values;
+    const { contractType, terminationReason, startDate, endDate, monthlySalary, pendingVacationDays, pendingThirteenthMonth, preaviso } = values;
 
     const daysOfService = differenceInDays(endDate, startDate);
     if (daysOfService < 0) {
@@ -57,7 +64,7 @@ const Liquidacion = () => {
         return;
     }
     const yearsOfService = differenceInYears(endDate, startDate);
-    const dailySalary = monthlySalary / 30; // Average daily salary
+    const dailySalary = monthlySalary / 30;
     const weeklySalary = (monthlySalary * 12) / 52;
 
     // Acquired Rights (Derechos Adquiridos)
@@ -69,30 +76,24 @@ const Liquidacion = () => {
     let primaDeAntiguedad = 0;
     let indemnizacion = 0;
     let pagoPreaviso = 0;
+    let specialNote = "";
 
-    switch (values.terminationReason) {
-      case "renuncia":
-      case "despido_justificado":
-        // Only acquired rights
-        break;
-      
-      case "mutuo_acuerdo":
-        primaDeAntiguedad = weeklySalary * yearsOfService;
-        break;
+    if (contractType === 'indefinido') {
+      primaDeAntiguedad = weeklySalary * yearsOfService;
+    }
 
-      case "obra_terminada":
-        // Special indemnity for this contract type: 3 weeks of salary per year
-        indemnizacion = 3 * weeklySalary * (daysOfService / 365);
-        break;
-
-      case "despido_injustificado":
-        primaDeAntiguedad = weeklySalary * yearsOfService;
-        // Indemnity approximation: 3.4 weeks of salary per year
+    if (terminationReason === 'despido_injustificado') {
+      if (contractType === 'indefinido') {
         indemnizacion = 3.4 * weeklySalary * (daysOfService / 365);
-        if (!values.preaviso) {
+        if (!preaviso) {
           pagoPreaviso = monthlySalary;
         }
-        break;
+      } else { // 'definido'
+        specialNote = "Para contratos de término definido, la indemnización por despido injustificado corresponde a los salarios restantes hasta la finalización del contrato. Este cálculo no puede ser realizado automáticamente.";
+      }
+    } else if (terminationReason === 'obra_terminada') {
+      indemnizacion = 3 * weeklySalary * (daysOfService / 365);
+      primaDeAntiguedad = 0; // This termination reason has its own special indemnity, not seniority premium.
     }
 
     const totalLiquidacion = vacacionesPendientesPagadas + decimoPendientePagado + vacacionesProporcionales + decimoProporcional + primaDeAntiguedad + indemnizacion + pagoPreaviso;
@@ -101,6 +102,7 @@ const Liquidacion = () => {
       vacacionesPendientesPagadas, decimoPendientePagado, vacacionesProporcionales, decimoProporcional,
       primaDeAntiguedad, indemnizacion, pagoPreaviso, totalLiquidacion,
       yearsOfService, monthsOfService: differenceInDays(endDate, startDate) / 30 % 12, daysOfService: daysOfService % 30,
+      specialNote,
     });
   };
 
@@ -115,6 +117,7 @@ const Liquidacion = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               <FormField control={form.control} name="terminationReason" render={({ field }) => (<FormItem><FormLabel>Motivo de Terminación</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un motivo" /></SelectTrigger></FormControl><SelectContent><SelectItem value="renuncia">Renuncia Voluntaria</SelectItem><SelectItem value="mutuo_acuerdo">Mutuo Acuerdo</SelectItem><SelectItem value="despido_justificado">Despido Justificado</SelectItem><SelectItem value="despido_injustificado">Despido Injustificado</SelectItem><SelectItem value="obra_terminada">Terminación de Obra</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="contractType" render={({ field }) => (<FormItem><FormLabel>Tipo de Contrato</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={terminationReason === 'obra_terminada'}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un tipo" /></SelectTrigger></FormControl><SelectContent><SelectItem value="indefinido">Indefinido</SelectItem><SelectItem value="definido">Definido / Obra</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="monthlySalary" render={({ field }) => (<FormItem><FormLabel>Último Salario Mensual ($)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Fecha de Inicio</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus locale={es} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Fecha de Fin</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus locale={es} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
@@ -131,7 +134,7 @@ const Liquidacion = () => {
           <div className="mt-12 p-6 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800/50 border rounded-xl shadow-lg shadow-primary/10">
             <h3 className="text-lg font-semibold mb-2 text-center text-foreground">Resultados del Cálculo</h3>
             <div className="divide-y divide-neutral-200/70 dark:divide-neutral-700/70">
-              <ResultRow icon={Clock} label="Tiempo de Servicio" value={`${result.yearsOfService}a ${Math.floor(result.monthsOfService)}m ${result.daysOfService}d`} />
+              <ResultRow icon={Clock} label="Tiempo de Servicio" value={`${result.yearsOfService}a ${Math.floor(result.monthsOfService)}m ${Math.floor(result.daysOfService)}d`} />
               <ResultRow icon={Sun} label="Vacaciones Proporcionales" value={`$${result.vacacionesProporcionales.toFixed(2)}`} />
               <ResultRow icon={Gift} label="Décimo Proporcional" value={`$${result.decimoProporcional.toFixed(2)}`} />
               {result.vacacionesPendientesPagadas > 0 && <ResultRow icon={Sun} label="Vacaciones Acumuladas" value={`$${result.vacacionesPendientesPagadas.toFixed(2)}`} />}
@@ -140,6 +143,14 @@ const Liquidacion = () => {
               {result.indemnizacion > 0 && <ResultRow icon={ShieldCheck} label="Indemnización" value={`$${result.indemnizacion.toFixed(2)}`} />}
               {result.pagoPreaviso > 0 && <ResultRow icon={Megaphone} label="Falta de Preaviso" value={`$${result.pagoPreaviso.toFixed(2)}`} />}
             </div>
+            {result.specialNote && (
+              <div className="mt-4 p-3 bg-yellow-100/50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 text-sm rounded-r-lg">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                  <p><strong className="font-semibold">Nota Importante:</strong> {result.specialNote}</p>
+                </div>
+              </div>
+            )}
             <div className="mt-6 pt-4 border-t-2 border-dashed border-neutral-300 dark:border-neutral-700 text-center">
               <p className="text-sm text-neutral-600 dark:text-neutral-400">Total Liquidación Estimada</p>
               <p className="text-4xl font-bold text-primary mt-1">${result.totalLiquidacion.toFixed(2)}</p>
