@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format, differenceInDays, differenceInYears, addYears, getYear } from "date-fns";
+import { format, differenceInDays, differenceInYears, addYears } from "date-fns";
 import { es } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
@@ -14,29 +14,24 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Clock, Award, Sun, Gift, ShieldCheck, Megaphone, AlertTriangle } from "lucide-react";
+import { CalendarIcon, Clock, Award, Sun, Gift, ShieldCheck, Info } from "lucide-react";
 import AdBanner from "@/components/AdBanner";
 
 const formSchema = z.object({
-  contractType: z.enum(["indefinido", "definido"], { required_error: "El tipo de contrato es requerido." }),
-  terminationReason: z.enum(["mutuo_acuerdo", "despido_justificado", "despido_injustificado", "renuncia", "obra_terminada"], { required_error: "El motivo de terminación es requerido." }),
   startDate: z.date({ required_error: "La fecha de inicio es requerida." }),
   endDate: z.date({ required_error: "La fecha de fin es requerida." }),
-  contractEndDate: z.date().optional(),
   monthlySalary: z.coerce.number().min(0.01, "El salario mensual debe ser mayor a cero."),
   pendingVacationDays: z.coerce.number().min(0, "Los días de vacaciones deben ser un número positivo.").optional().default(0),
-  lastDecimoPaid: z.string().optional(),
-  preaviso: z.boolean().default(false).optional(),
-}).refine(data => {
-    if (data.contractType === 'definido' && !data.contractEndDate) {
-        return false;
-    }
-    return true;
-}, {
-    message: "La fecha de fin de contrato es requerida para contratos definidos.",
-    path: ["contractEndDate"],
+  terminationType: z.enum([
+    "despido_injustificado",
+    "despido_justificado",
+    "renuncia_voluntaria",
+    "renuncia_justificada",
+    "mutuo_acuerdo",
+    "expiracion_contrato",
+    "conclusion_de_obra"
+  ], { required_error: "El tipo de terminación es requerido." }),
 });
 
 const ResultRow = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string }) => (
@@ -53,20 +48,11 @@ const Liquidacion = () => {
   const [result, setResult] = useState<any>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { monthlySalary: 0, pendingVacationDays: 0, preaviso: false },
+    defaultValues: { monthlySalary: 0, pendingVacationDays: 0 },
   });
 
-  const terminationReason = form.watch("terminationReason");
-  const contractType = form.watch("contractType");
-
-  useEffect(() => {
-    if (terminationReason === 'obra_terminada') {
-      form.setValue('contractType', 'definido');
-    }
-  }, [terminationReason, form]);
-
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const { contractType, terminationReason, startDate, endDate, contractEndDate, monthlySalary, pendingVacationDays, lastDecimoPaid, preaviso } = values;
+    const { startDate, endDate, monthlySalary, pendingVacationDays, terminationType } = values;
 
     const totalDaysWorked = differenceInDays(endDate, startDate);
     if (totalDaysWorked < 0) {
@@ -77,60 +63,55 @@ const Liquidacion = () => {
     const yearsWorked = differenceInYears(endDate, startDate);
     const remainingDaysAfterYears = differenceInDays(endDate, addYears(startDate, yearsWorked));
     const monthsWorked = Math.floor(remainingDaysAfterYears / 30);
-    const daysWorked = remainingDaysAfterYears % 30;
+    const daysWorkedInMonth = remainingDaysAfterYears % 30;
 
     const dailySalary = monthlySalary / 30;
     const weeklySalary = (monthlySalary * 12) / 52;
 
-    // Décimo Proporcional Calculation
-    let decimoStartDate = startDate;
-    const endYear = getYear(endDate);
-    if (lastDecimoPaid === 'primer') decimoStartDate = new Date(endYear, 3, 16); // Starts after April 15
-    if (lastDecimoPaid === 'segundo') decimoStartDate = new Date(endYear, 7, 16); // Starts after Aug 15
-    if (lastDecimoPaid === 'tercer') decimoStartDate = new Date(endYear, 11, 16); // Starts after Dec 15
-    
-    const daysForDecimo = differenceInDays(endDate, decimoStartDate);
-    const decimoProporcional = monthlySalary * (daysForDecimo > 0 ? daysForDecimo / 365 : 0);
-
-    // Acquired Rights
-    const vacacionesPendientesPagadas = (pendingVacationDays || 0) * dailySalary;
+    // Derechos Adquiridos (Common for all)
+    const vacacionesAcumuladas = (pendingVacationDays || 0) * dailySalary;
     const vacacionesProporcionales = (totalDaysWorked / 330) * monthlySalary;
+    const decimoProporcional = monthlySalary * (totalDaysWorked / 365);
 
     let primaDeAntiguedad = 0;
     let indemnizacion = 0;
-    let pagoPreaviso = 0;
     let specialNote = "";
 
-    if (contractType === 'indefinido') {
-      primaDeAntiguedad = weeklySalary * yearsWorked;
-    }
-
-    if (terminationReason === 'despido_injustificado') {
-      if (contractType === 'indefinido') {
+    switch (terminationType) {
+      case 'despido_injustificado':
+      case 'renuncia_justificada':
+        primaDeAntiguedad = weeklySalary * yearsWorked;
         indemnizacion = 3.4 * weeklySalary * (totalDaysWorked / 365);
-        if (!preaviso) pagoPreaviso = monthlySalary;
-      } else { // 'definido'
-        if (contractEndDate) {
-            const remainingDays = differenceInDays(contractEndDate, endDate);
-            if (remainingDays > 0) {
-                indemnizacion = (remainingDays / 30) * monthlySalary;
-                specialNote = `La indemnización corresponde a los salarios restantes hasta el fin del contrato (${format(contractEndDate, "PPP", { locale: es })}).`;
-            } else {
-                specialNote = "La fecha de terminación es posterior o igual a la fecha de fin de contrato, por lo que no aplica indemnización por salarios restantes.";
-            }
+        specialNote = "El cálculo incluye indemnización por terminación injustificada y prima de antigüedad.";
+        break;
+      
+      case 'renuncia_voluntaria':
+      case 'expiracion_contrato':
+      case 'mutuo_acuerdo':
+        primaDeAntiguedad = weeklySalary * yearsWorked;
+        if (terminationType === 'mutuo_acuerdo') {
+          specialNote = "El cálculo incluye derechos adquiridos y prima de antigüedad. Cualquier bonificación adicional depende del acuerdo entre las partes.";
+        } else {
+          specialNote = "El cálculo incluye derechos adquiridos y prima de antigüedad.";
         }
-      }
-    } else if (terminationReason === 'obra_terminada') {
-      indemnizacion = 3 * weeklySalary * (totalDaysWorked / 365);
-      primaDeAntiguedad = 0;
+        break;
+
+      case 'conclusion_de_obra':
+        indemnizacion = 3 * weeklySalary * (totalDaysWorked / 365);
+        specialNote = "Incluye indemnización especial por terminación de obra. No aplica prima de antigüedad en este caso.";
+        break;
+
+      case 'despido_justificado':
+        specialNote = "El cálculo solo incluye derechos adquiridos (vacaciones y décimo). No aplica indemnización ni prima de antigüedad.";
+        break;
     }
 
-    const totalLiquidacion = vacacionesPendientesPagadas + vacacionesProporcionales + decimoProporcional + primaDeAntiguedad + indemnizacion + pagoPreaviso;
+    const totalLiquidacion = vacacionesAcumuladas + vacacionesProporcionales + decimoProporcional + primaDeAntiguedad + indemnizacion;
     
     setResult({
-      vacacionesPendientesPagadas, vacacionesProporcionales, decimoProporcional,
-      primaDeAntiguedad, indemnizacion, pagoPreaviso, totalLiquidacion,
-      yearsOfService: yearsWorked, monthsOfService: monthsWorked, daysOfService: daysWorked,
+      vacacionesAcumuladas, vacacionesProporcionales, decimoProporcional,
+      primaDeAntiguedad, indemnizacion, totalLiquidacion,
+      yearsOfService: yearsWorked, monthsOfService: monthsWorked, daysOfService: daysWorkedInMonth,
       specialNote, endDate,
     });
   };
@@ -138,26 +119,28 @@ const Liquidacion = () => {
   return (
     <Card className="w-full shadow-none border-none">
       <CardHeader className="p-0 mb-8">
-        <CardTitle className="text-xl text-foreground">Cálculo de Liquidación</CardTitle>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">Ingrese los datos para calcular su liquidación según el motivo de terminación.</p>
+        <CardTitle className="text-xl text-foreground">Calculadora de Liquidación</CardTitle>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">Complete los campos para estimar su liquidación.</p>
       </CardHeader>
       <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <FormField control={form.control} name="terminationReason" render={({ field }) => (<FormItem><FormLabel>Motivo de Terminación</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un motivo" /></SelectTrigger></FormControl><SelectContent><SelectItem value="renuncia">Renuncia Voluntura</SelectItem><SelectItem value="mutuo_acuerdo">Mutuo Acuerdo</SelectItem><SelectItem value="despido_justificado">Despido Justificado</SelectItem><SelectItem value="despido_injustificado">Despido Injustificado</SelectItem><SelectItem value="obra_terminada">Terminación de Obra</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="contractType" render={({ field }) => (<FormItem><FormLabel>Tipo de Contrato</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={terminationReason === 'obra_terminada'}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un tipo" /></SelectTrigger></FormControl><SelectContent><SelectItem value="indefinido">Indefinido</SelectItem><SelectItem value="definido">Definido / Obra</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="monthlySalary" render={({ field }) => (<FormItem><FormLabel>Último Salario Mensual ($)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="pendingVacationDays" render={({ field }) => (<FormItem><FormLabel>Días de Vacaciones Acumulados</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Fecha de Inicio</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus locale={es} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Fecha de Fin</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus locale={es} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-              {contractType === 'definido' && (
-                <FormField control={form.control} name="contractEndDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Fecha de Fin de Contrato</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus locale={es} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-              )}
-              <FormField control={form.control} name="lastDecimoPaid" render={({ field }) => (<FormItem><FormLabel>Último Décimo Cobrado</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="No aplica / Ninguno" /></SelectTrigger></FormControl><SelectContent><SelectItem value="primer">1ra Partida (Abril)</SelectItem><SelectItem value="segundo">2da Partida (Agosto)</SelectItem><SelectItem value="tercer">3ra Partida (Diciembre)</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-              {terminationReason === 'despido_injustificado' && (
-                <FormField control={form.control} name="preaviso" render={({ field }) => (<FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 md:col-span-2"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>¿Recibió el preaviso de 30 días?</FormLabel><p className="text-xs text-muted-foreground">Marque esta casilla si su empleador le notificó su despido con 30 días o más de anticipación.</p></div></FormItem>)} />
-              )}
+              <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Fecha de Terminación</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus locale={es} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="monthlySalary" render={({ field }) => (<FormItem><FormLabel>Último Salario Mensual ($)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="pendingVacationDays" render={({ field }) => (<FormItem><FormLabel>Días de Vacaciones Pendientes</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <div className="md:col-span-2">
+                <FormField control={form.control} name="terminationType" render={({ field }) => (<FormItem><FormLabel>Tipo de Terminación</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un motivo" /></SelectTrigger></FormControl><SelectContent>
+                  <SelectItem value="despido_injustificado">Despido Injustificado</SelectItem>
+                  <SelectItem value="despido_justificado">Despido Justificado</SelectItem>
+                  <SelectItem value="renuncia_voluntaria">Renuncia Voluntaria</SelectItem>
+                  <SelectItem value="renuncia_justificada">Renuncia Justificada</SelectItem>
+                  <SelectItem value="mutuo_acuerdo">Mutuo Acuerdo</SelectItem>
+                  <SelectItem value="expiracion_contrato">Expiración de Contrato</SelectItem>
+                  <SelectItem value="conclusion_de_obra">Conclusión de Obra</SelectItem>
+                </SelectContent></Select><FormMessage /></FormItem>)} />
+              </div>
             </div>
             <Button type="submit" className="w-full md:w-auto" size="lg">Calcular Liquidación</Button>
           </form>
@@ -170,16 +153,15 @@ const Liquidacion = () => {
               <ResultRow icon={CalendarIcon} label="Fecha de Salida" value={format(result.endDate, "dd 'de' MMMM 'de' yyyy", { locale: es })} />
               <ResultRow icon={Sun} label="Vacaciones Proporcionales" value={`$${result.vacacionesProporcionales.toFixed(2)}`} />
               <ResultRow icon={Gift} label="Décimo Proporcional" value={`$${result.decimoProporcional.toFixed(2)}`} />
-              {result.vacacionesPendientesPagadas > 0 && <ResultRow icon={Sun} label="Vacaciones Acumuladas" value={`$${result.vacacionesPendientesPagadas.toFixed(2)}`} />}
+              {result.vacacionesAcumuladas > 0 && <ResultRow icon={Sun} label="Vacaciones Pendientes" value={`$${result.vacacionesAcumuladas.toFixed(2)}`} />}
               {result.primaDeAntiguedad > 0 && <ResultRow icon={Award} label="Prima de Antigüedad" value={`$${result.primaDeAntiguedad.toFixed(2)}`} />}
               {result.indemnizacion > 0 && <ResultRow icon={ShieldCheck} label="Indemnización" value={`$${result.indemnizacion.toFixed(2)}`} />}
-              {result.pagoPreaviso > 0 && <ResultRow icon={Megaphone} label="Falta de Preaviso" value={`$${result.pagoPreaviso.toFixed(2)}`} />}
             </div>
             {result.specialNote && (
-              <div className="mt-4 p-3 bg-yellow-100/50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 text-sm rounded-r-lg">
+              <div className="mt-4 p-3 bg-blue-100/50 dark:bg-blue-900/20 border-l-4 border-blue-500 text-blue-800 dark:text-blue-200 text-sm rounded-r-lg">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-                  <p><strong className="font-semibold">Nota Importante:</strong> {result.specialNote}</p>
+                  <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <p><strong className="font-semibold">Nota:</strong> {result.specialNote}</p>
                 </div>
               </div>
             )}
@@ -187,7 +169,7 @@ const Liquidacion = () => {
               <p className="text-sm text-neutral-600 dark:text-neutral-400">Total Liquidación Estimada</p>
               <p className="text-4xl font-bold text-primary mt-1">${result.totalLiquidacion.toFixed(2)}</p>
             </div>
-            <p className="text-xs text-neutral-500 mt-6 text-center">*Este cálculo es una estimación basada en aproximaciones de la ley. Consulte a un profesional de recursos humanos o un abogado laboral para un cálculo exacto y asesoría legal.</p>
+            <p className="text-xs text-neutral-500 mt-6 text-center">*Este cálculo es una estimación. Consulte a un profesional para un cálculo exacto y asesoría legal.</p>
           </div>
         )}
         <AdBanner />
