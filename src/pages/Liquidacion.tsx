@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format, differenceInDays, differenceInYears, addYears } from "date-fns";
+import { format, differenceInDays, differenceInYears, addYears, getYear } from "date-fns";
 import { es } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
@@ -61,34 +61,53 @@ const Liquidacion = () => {
     }
 
     const yearsWorked = differenceInYears(endDate, startDate);
-    const remainingDaysAfterYears = differenceInDays(endDate, addYears(startDate, yearsWorked));
-    const monthsWorked = Math.floor(remainingDaysAfterYears / 30);
-    const daysWorkedInMonth = remainingDaysAfterYears % 30;
+    const lastAnniversary = addYears(startDate, yearsWorked);
+    const remainingDaysAfterFullYears = differenceInDays(endDate, lastAnniversary);
+    const monthsWorked = Math.floor(remainingDaysAfterFullYears / 30.44);
+    const daysWorkedInMonth = Math.floor(remainingDaysAfterFullYears % 30.44);
 
     const dailySalary = monthlySalary / 30;
     const weeklySalary = (monthlySalary * 12) / 52;
 
-    // Derechos Adquiridos (Common for all)
+    // Derechos Adquiridos
     const vacacionesAcumuladas = (pendingVacationDays || 0) * dailySalary;
-    const vacacionesProporcionales = (totalDaysWorked / 330) * monthlySalary;
-    const decimoProporcional = monthlySalary * (totalDaysWorked / 365);
+
+    // Vacaciones Proporcionales: 1 día por cada 11 días trabajados desde el último aniversario.
+    const daysForProportionalVacation = differenceInDays(endDate, lastAnniversary);
+    const proportionalVacationDays = daysForProportionalVacation / 11;
+    const vacacionesProporcionales = proportionalVacationDays * dailySalary;
+
+    // Décimo Proporcional: Calculado desde el inicio del último período de pago.
+    const endMonth = endDate.getMonth();
+    const endYear = getYear(endDate);
+    let decimoStartDate;
+    if (endMonth < 4 || (endMonth === 4 && endDate.getDate() <= 15)) { // Periodo 1: 16-Dic a 15-Abr
+        decimoStartDate = new Date(endYear - 1, 11, 16);
+    } else if (endMonth < 8 || (endMonth === 8 && endDate.getDate() <= 15)) { // Periodo 2: 16-Abr a 15-Ago
+        decimoStartDate = new Date(endYear, 3, 16);
+    } else { // Periodo 3: 16-Ago a 15-Dic
+        decimoStartDate = new Date(endYear, 7, 16);
+    }
+    const daysForDecimo = differenceInDays(endDate, decimoStartDate > startDate ? decimoStartDate : startDate);
+    const decimoProporcional = (monthlySalary / 12) * (daysForDecimo / 30.44);
 
     let primaDeAntiguedad = 0;
     let indemnizacion = 0;
     let specialNote = "";
+    const totalYearsFraction = totalDaysWorked / 365.25;
 
     switch (terminationType) {
       case 'despido_injustificado':
       case 'renuncia_justificada':
-        primaDeAntiguedad = weeklySalary * yearsWorked;
-        indemnizacion = 3.4 * weeklySalary * (totalDaysWorked / 365);
+        primaDeAntiguedad = weeklySalary * totalYearsFraction;
+        indemnizacion = 3.4 * weeklySalary * totalYearsFraction;
         specialNote = "El cálculo incluye indemnización por terminación injustificada y prima de antigüedad.";
         break;
       
       case 'renuncia_voluntaria':
       case 'expiracion_contrato':
       case 'mutuo_acuerdo':
-        primaDeAntiguedad = weeklySalary * yearsWorked;
+        primaDeAntiguedad = weeklySalary * totalYearsFraction;
         if (terminationType === 'mutuo_acuerdo') {
           specialNote = "El cálculo incluye derechos adquiridos y prima de antigüedad. Cualquier bonificación adicional depende del acuerdo entre las partes.";
         } else {
@@ -97,7 +116,7 @@ const Liquidacion = () => {
         break;
 
       case 'conclusion_de_obra':
-        indemnizacion = 3 * weeklySalary * (totalDaysWorked / 365);
+        indemnizacion = 3 * weeklySalary * totalYearsFraction;
         specialNote = "Incluye indemnización especial por terminación de obra. No aplica prima de antigüedad en este caso.";
         break;
 
@@ -151,9 +170,9 @@ const Liquidacion = () => {
             <div className="divide-y divide-neutral-200/70 dark:divide-neutral-700/70">
               <ResultRow icon={Clock} label="Tiempo de Servicio" value={`${result.yearsOfService}a ${result.monthsOfService}m ${result.daysOfService}d`} />
               <ResultRow icon={CalendarIcon} label="Fecha de Salida" value={format(result.endDate, "dd 'de' MMMM 'de' yyyy", { locale: es })} />
+              {result.vacacionesAcumuladas > 0 && <ResultRow icon={Sun} label="Vacaciones Pendientes" value={`$${result.vacacionesAcumuladas.toFixed(2)}`} />}
               <ResultRow icon={Sun} label="Vacaciones Proporcionales" value={`$${result.vacacionesProporcionales.toFixed(2)}`} />
               <ResultRow icon={Gift} label="Décimo Proporcional" value={`$${result.decimoProporcional.toFixed(2)}`} />
-              {result.vacacionesAcumuladas > 0 && <ResultRow icon={Sun} label="Vacaciones Pendientes" value={`$${result.vacacionesAcumuladas.toFixed(2)}`} />}
               {result.primaDeAntiguedad > 0 && <ResultRow icon={Award} label="Prima de Antigüedad" value={`$${result.primaDeAntiguedad.toFixed(2)}`} />}
               {result.indemnizacion > 0 && <ResultRow icon={ShieldCheck} label="Indemnización" value={`$${result.indemnizacion.toFixed(2)}`} />}
             </div>
