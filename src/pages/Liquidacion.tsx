@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format, differenceInDays, differenceInYears } from "date-fns";
+import { format, differenceInDays, differenceInYears, addYears } from "date-fns";
 import { es } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
@@ -67,19 +67,26 @@ const Liquidacion = () => {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const { contractType, terminationReason, startDate, endDate, contractEndDate, monthlySalary, pendingVacationDays, preaviso } = values;
 
-    const daysOfService = differenceInDays(endDate, startDate);
-    if (daysOfService < 0) {
+    const totalDaysWorked = differenceInDays(endDate, startDate);
+    if (totalDaysWorked < 0) {
         form.setError("endDate", { type: "manual", message: "La fecha de fin no puede ser anterior a la de inicio." });
         return;
     }
-    const yearsOfService = differenceInYears(endDate, startDate);
+
+    const yearsWorked = differenceInYears(endDate, startDate);
+    const remainingDaysAfterYears = differenceInDays(endDate, addYears(startDate, yearsWorked));
+    const monthsWorked = Math.floor(remainingDaysAfterYears / 30); // Approx months
+    const daysWorked = remainingDaysAfterYears % 30; // Remaining days
+
     const dailySalary = monthlySalary / 30;
     const weeklySalary = (monthlySalary * 12) / 52;
 
     // Acquired Rights (Derechos Adquiridos)
     const vacacionesPendientesPagadas = (pendingVacationDays || 0) * dailySalary;
-    const vacacionesProporcionales = (daysOfService / 365) * 30 * dailySalary;
-    const decimoProporcional = monthlySalary * (daysOfService / 365);
+    // Vacaciones Proporcionales: 30 días por cada 11 meses de servicio continuo (330 días)
+    const vacacionesProporcionales = (totalDaysWorked / 330) * monthlySalary;
+    // Décimo Proporcional: 1/12 de los salarios percibidos en el período
+    const decimoProporcional = monthlySalary * (totalDaysWorked / 365);
 
     let primaDeAntiguedad = 0;
     let indemnizacion = 0;
@@ -87,12 +94,12 @@ const Liquidacion = () => {
     let specialNote = "";
 
     if (contractType === 'indefinido') {
-      primaDeAntiguedad = weeklySalary * yearsOfService;
+      primaDeAntiguedad = weeklySalary * yearsWorked;
     }
 
     if (terminationReason === 'despido_injustificado') {
       if (contractType === 'indefinido') {
-        indemnizacion = 3.4 * weeklySalary * (daysOfService / 365);
+        indemnizacion = 3.4 * weeklySalary * (totalDaysWorked / 365);
         if (!preaviso) {
           pagoPreaviso = monthlySalary;
         }
@@ -108,7 +115,7 @@ const Liquidacion = () => {
         }
       }
     } else if (terminationReason === 'obra_terminada') {
-      indemnizacion = 3 * weeklySalary * (daysOfService / 365);
+      indemnizacion = 3 * weeklySalary * (totalDaysWorked / 365);
       primaDeAntiguedad = 0; // This termination reason has its own special indemnity, not seniority premium.
     }
 
@@ -117,8 +124,9 @@ const Liquidacion = () => {
     setResult({
       vacacionesPendientesPagadas, vacacionesProporcionales, decimoProporcional,
       primaDeAntiguedad, indemnizacion, pagoPreaviso, totalLiquidacion,
-      yearsOfService, monthsOfService: differenceInDays(endDate, startDate) / 30 % 12, daysOfService: daysOfService % 30,
+      yearsOfService: yearsWorked, monthsOfService: monthsWorked, daysOfService: daysWorked,
       specialNote,
+      endDate: endDate, // Add endDate to result for display
     });
   };
 
@@ -132,7 +140,7 @@ const Liquidacion = () => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <FormField control={form.control} name="terminationReason" render={({ field }) => (<FormItem><FormLabel>Motivo de Terminación</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un motivo" /></SelectTrigger></FormControl><SelectContent><SelectItem value="renuncia">Renuncia Voluntaria</SelectItem><SelectItem value="mutuo_acuerdo">Mutuo Acuerdo</SelectItem><SelectItem value="despido_justificado">Despido Justificado</SelectItem><SelectItem value="despido_injustificado">Despido Injustificado</SelectItem><SelectItem value="obra_terminada">Terminación de Obra</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="terminationReason" render={({ field }) => (<FormItem><FormLabel>Motivo de Terminación</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un motivo" /></SelectTrigger></FormControl><SelectContent><SelectItem value="renuncia">Renuncia Voluntura</SelectItem><SelectItem value="mutuo_acuerdo">Mutuo Acuerdo</SelectItem><SelectItem value="despido_justificado">Despido Justificado</SelectItem><SelectItem value="despido_injustificado">Despido Injustificado</SelectItem><SelectItem value="obra_terminada">Terminación de Obra</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="contractType" render={({ field }) => (<FormItem><FormLabel>Tipo de Contrato</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={terminationReason === 'obra_terminada'}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un tipo" /></SelectTrigger></FormControl><SelectContent><SelectItem value="indefinido">Indefinido</SelectItem><SelectItem value="definido">Definido / Obra</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
               {contractType === 'definido' && (
                 <FormField control={form.control} name="contractEndDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Fecha de Fin de Contrato</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus locale={es} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
@@ -152,7 +160,8 @@ const Liquidacion = () => {
           <div className="mt-12 p-6 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800/50 border rounded-xl shadow-lg shadow-primary/10">
             <h3 className="text-lg font-semibold mb-2 text-center text-foreground">Resultados del Cálculo</h3>
             <div className="divide-y divide-neutral-200/70 dark:divide-neutral-700/70">
-              <ResultRow icon={Clock} label="Tiempo de Servicio" value={`${result.yearsOfService}a ${Math.floor(result.monthsOfService)}m ${Math.floor(result.daysOfService)}d`} />
+              <ResultRow icon={Clock} label="Tiempo de Servicio" value={`${result.yearsOfService}a ${result.monthsOfService}m ${result.daysOfService}d`} />
+              <ResultRow icon={CalendarIcon} label="Fecha de Salida" value={format(result.endDate, "dd 'de' MMMM 'de' yyyy", { locale: es })} />
               <ResultRow icon={Sun} label="Vacaciones Proporcionales" value={`$${result.vacacionesProporcionales.toFixed(2)}`} />
               <ResultRow icon={Gift} label="Décimo Proporcional" value={`$${result.decimoProporcional.toFixed(2)}`} />
               {result.vacacionesPendientesPagadas > 0 && <ResultRow icon={Sun} label="Vacaciones Acumuladas" value={`$${result.vacacionesPendientesPagadas.toFixed(2)}`} />}
